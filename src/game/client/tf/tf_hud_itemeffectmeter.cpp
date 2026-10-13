@@ -6,6 +6,7 @@
 //=============================================================================
 
 #include "cbase.h"
+#include "tf_weapon_veteran_rifle.h"	// OWTF2
 #include "tf_hud_itemeffectmeter.h"
 #include "tf_weapon_bat.h"
 #include "tf_weapon_jar.h"
@@ -321,6 +322,11 @@ void CHudItemEffectMeter::CreateHudElementsForClass( C_TFPlayer* pPlayer, CUtlVe
 		DECLARE_ITEM_EFFECT_METER( C_TFWeaponBuilder, TF_WEAPON_BUILDER, true, "resource/UI/HudItemEffectMeter_Sapper.res" );
 		DECLARE_ITEM_EFFECT_METER( CTFRevolver, TF_WEAPON_REVOLVER, false, "resource/UI/HUDItemEffectMeter_Spy.res" );
 
+		break;
+
+	// OWTF2: helix rockets cooldown, the same meter as the Jarate's
+	case TF_CLASS_VETERAN:
+		DECLARE_ITEM_EFFECT_METER( CTFVeteranRifle, TF_WEAPON_VETERAN_RIFLE, true, NULL );
 		break;
 
 	case TF_CLASS_ENGINEER:
@@ -952,7 +958,9 @@ static const char *pszClassIcons[] = {
 	"../hud/leaderboard_class_pyro",
 	"../hud/leaderboard_class_spy",
 	"../hud/leaderboard_class_engineer",
+	"../hud/leaderboard_class_sniper",	// OWTF2: Veteran, Sniper art for now
 };
+COMPILE_TIME_ASSERT( ARRAYSIZE( pszClassIcons ) == TF_LAST_NORMAL_CLASS );	// OWTF2: catch a missing class row
 
 template <>
 void CHudItemEffectMeter_Weapon< CTFMinigun >::Update( C_TFPlayer* pPlayer )

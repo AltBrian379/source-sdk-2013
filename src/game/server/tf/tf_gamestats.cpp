@@ -5,6 +5,7 @@
 //=============================================================================//
 
 #include "cbase.h"
+#include "tf_ultimate.h"	// OWTF2
 #include "tf_gamerules.h"
 #include "tf_gamestats.h"
 #include "tf_obj_sentrygun.h"
@@ -55,8 +56,10 @@ const char *g_aClassNames[] =
 	"TF_CLASS_PYRO",
 	"TF_CLASS_SPY",
 	"TF_CLASS_ENGINEER",
+	"TF_CLASS_VETERAN",	// OWTF2: new class
 	"TF_CLASS_CIVILIAN",
 };
+COMPILE_TIME_ASSERT( ARRAYSIZE( g_aClassNames ) == TF_CLASS_COUNT_ALL );	// OWTF2
 
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
@@ -716,6 +719,9 @@ TF_Gamestats_RoundStats_t* CTFGameStats::GetRoundStatsForTeam( int iTeamNumber )
 //-----------------------------------------------------------------------------
 void CTFGameStats::Event_PlayerHealedOther( CTFPlayer *pPlayer, float amount ) 
 {
+	// OWTF2: every healing source reports here, so it doubles as the ultimate's healing listener
+	Ultimate_OnHealingDone( pPlayer, amount );
+
 	// make sure value is sane
 	int iAmount = (int) amount;
 	Assert( iAmount >= 0 );

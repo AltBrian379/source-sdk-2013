@@ -325,7 +325,7 @@ void CTFHudMannVsMachineScoreboard::UpdatePlayerList ()
 				}
 				else
 				{
-					pKeyValues->SetInt( "class", tf_scoreboard_alt_class_icons.GetBool() ? m_iImageClassAlt[iClass + 9] : m_iImageClass[iClass + 9] ); // +9 is to jump ahead to the darker dead icons
+					pKeyValues->SetInt( "class", tf_scoreboard_alt_class_icons.GetBool() ? m_iImageClassAlt[iClass + TF_CLASS_ICON_DEAD_OFFSET] : m_iImageClass[iClass + TF_CLASS_ICON_DEAD_OFFSET] ); // OWTF2: was +9; jump ahead to the darker dead icons
 				}
 			}
 			else

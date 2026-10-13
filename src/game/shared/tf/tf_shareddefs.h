@@ -212,9 +212,12 @@ enum ETFClass
 	TF_CLASS_HEAVYWEAPONS,
 	TF_CLASS_PYRO,
 	TF_CLASS_SPY,
-	TF_CLASS_ENGINEER,		
+	TF_CLASS_ENGINEER,
 
 	// Add any new classes after Engineer
+	// OWTF2: the mod's hero class. Inserted before Civilian so it counts as a normal,
+	// selectable class (IsValidTFPlayerClass, FOR_EACH_NORMAL_PLAYER_CLASS).
+	TF_CLASS_VETERAN,
 	TF_CLASS_CIVILIAN,		// TF_LAST_NORMAL_CLASS
 	TF_CLASS_COUNT_ALL,
 
@@ -520,6 +523,8 @@ enum ETFWeaponType
 	// ADD NEW WEAPONS HERE TO AVOID BREAKING DEMOS
 	//
 
+	TF_WEAPON_VETERAN_RIFLE,	// OWTF2: Veteran primary (tf_weapon_veteran_rifle)
+
 	TF_WEAPON_COUNT
 };
 
@@ -636,7 +641,10 @@ extern const char *g_pszInvasionMaps[];
 bool IsPlayingInvasionMap( void );
 
 #define SCOREBOARD_DOMINATION_ICONS		17
-#define SCOREBOARD_CLASS_ICONS			19
+// OWTF2: class icon tables hold one live icon per normal class, then the dead variants.
+// Was a hard-coded 19 and "+ 9"; derived from the class count so new classes fit.
+#define TF_CLASS_ICON_DEAD_OFFSET		( TF_LAST_NORMAL_CLASS - TF_FIRST_NORMAL_CLASS )
+#define SCOREBOARD_CLASS_ICONS			( 1 + 2 * TF_CLASS_ICON_DEAD_OFFSET )
 #define SCOREBOARD_PING_ICONS			6
 
 extern const char *g_pszClassIcons[];

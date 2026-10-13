@@ -50,7 +50,9 @@ const char *g_pszTipsClassImages[] =
 	"class_portraits/pyro",	// TF_CLASS_PYRO,
 	"class_portraits/spy",		// TF_CLASS_SPY,
 	"class_portraits/engineer",		// TF_CLASS_ENGINEER,		
+	"class_portraits/sniper",		// TF_CLASS_VETERAN, OWTF2: Sniper art for now
 };
+COMPILE_TIME_ASSERT( ARRAYSIZE( g_pszTipsClassImages ) == TF_LAST_NORMAL_CLASS );	// OWTF2: catch a missing class row
 
 ClassDetails_t g_PerClassStatDetails[15] =
 {

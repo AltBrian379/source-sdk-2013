@@ -26,6 +26,7 @@ public:
 	CTFHudWeaponAmmo( const char *pElementName );
 
 	virtual void ApplySchemeSettings( vgui::IScheme *pScheme );
+	virtual void ApplySettings( KeyValues *inResourceData );	// OWTF2
 	virtual void Reset();
 
 	virtual bool ShouldDraw( void );
@@ -40,6 +41,7 @@ private:
 	void ShowLowAmmoIndicator( void );
 	void SizeLowAmmoIndicator( float flCurrentAmount, float flMaxAmount );
 	void HideLowAmmoIndicator( void );
+	void UpdatePositionForUltimateMeter( void );	// OWTF2
 
 private:
 
@@ -61,6 +63,10 @@ private:
 	CExLabel						*m_pNoClip;
 	CExLabel						*m_pNoClipShadow;
 	vgui::ImagePanel				*m_pLowAmmoImage;
+
+	// OWTF2: position from hudlayout.res, restored when the ultimate meter is hidden
+	int								m_nLayoutXPos;
+	int								m_nLayoutYPos;
 };
 
 #endif	// TF_HUD_AMMOSTATUS_H

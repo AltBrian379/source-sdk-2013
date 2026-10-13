@@ -248,7 +248,9 @@ const char *g_pszHeadGibs[] =
 	"models/player\\gibs\\pyrogib008.mdl",
 	"models/player\\gibs\\spygib007.mdl",
 	"models/player\\gibs\\engineergib006.mdl",
+	"models/player\\gibs\\snipergib005.mdl",	// OWTF2: Veteran uses the Sniper model
 };
+COMPILE_TIME_ASSERT( ARRAYSIZE( g_pszHeadGibs ) == TF_LAST_NORMAL_CLASS );	// OWTF2: catch a missing class row
 
 const char *g_pszBotHeadGibs[] =
 {
@@ -262,7 +264,9 @@ const char *g_pszBotHeadGibs[] =
 	"models/bots\\gibs\\pyrobot_gib_head.mdl",
 	"models/bots\\gibs\\spybot_gib_head.mdl",
 	"models/bots\\gibs\\engineerbot_gib_head.mdl",
+	"models/bots\\gibs\\sniperbot_gib_head.mdl",	// OWTF2: Veteran uses the Sniper model
 };
+COMPILE_TIME_ASSERT( ARRAYSIZE( g_pszBotHeadGibs ) == TF_LAST_NORMAL_CLASS );	// OWTF2: catch a missing class row
 
 const char *pszHeadLabelNames[] =
 {

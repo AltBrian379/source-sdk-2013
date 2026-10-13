@@ -1324,7 +1324,9 @@ int ClassZoomZ[] =
 	22, // TF_CLASS_PYRO,
 	27, // TF_CLASS_SPY,
 	20, // TF_CLASS_ENGINEER,		
+	25, // TF_CLASS_VETERAN, OWTF2: matches the Sniper model it uses
 };
+COMPILE_TIME_ASSERT( ARRAYSIZE( ClassZoomZ ) == TF_LAST_NORMAL_CLASS );	// OWTF2: catch a missing class row
 
 //-----------------------------------------------------------------------------
 // Purpose: 

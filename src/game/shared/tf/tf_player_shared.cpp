@@ -6,6 +6,8 @@
 #include "cbase.h"
 #include "tf_gamerules.h"
 #include "tf_player_shared.h"
+#include "tf_veteran_abilities.h"	// OWTF2
+#include "tf_ultimate.h"	// OWTF2
 #include "takedamageinfo.h"
 #include "tf_weaponbase.h"
 #include "effect_dispatch_data.h"
@@ -339,6 +341,9 @@ BEGIN_RECV_TABLE_NOBASE( CTFPlayerShared, DT_TFPlayerSharedLocal )
 	RecvPropBool( RECVINFO( m_bLastDisguisedAsOwnTeam ) ),
 	RecvPropFloat( RECVINFO( m_flRageMeter ) ),
 	RecvPropBool( RECVINFO( m_bRageDraining ) ),
+	RecvPropBool( RECVINFO( m_bVeteranSprinting ) ),	// OWTF2
+	RecvPropFloat( RECVINFO( m_flUltimateCharge ) ),	// OWTF2
+	RecvPropBool( RECVINFO( m_bUltimateActive ) ),	// OWTF2
 	RecvPropTime( RECVINFO( m_flNextRageEarnTime ) ),
 	RecvPropBool( RECVINFO( m_bInUpgradeZone ) ),
 	RecvPropArray3( RECVINFO_ARRAY( m_flItemChargeMeter ), RecvPropFloat( RECVINFO( m_flItemChargeMeter[0] ) ) ),
@@ -447,6 +452,9 @@ BEGIN_PREDICTION_DATA_NO_BASE( CTFPlayerShared )
 	DEFINE_PRED_FIELD( m_flCloakMeter, FIELD_FLOAT, FTYPEDESC_INSENDTABLE ),
 	DEFINE_PRED_FIELD( m_flRageMeter, FIELD_FLOAT, FTYPEDESC_INSENDTABLE ),
 	DEFINE_PRED_FIELD( m_bRageDraining, FIELD_BOOLEAN, FTYPEDESC_INSENDTABLE ),
+	DEFINE_PRED_FIELD( m_bVeteranSprinting, FIELD_BOOLEAN, FTYPEDESC_INSENDTABLE ),	// OWTF2
+	DEFINE_PRED_FIELD( m_flUltimateCharge, FIELD_FLOAT, FTYPEDESC_INSENDTABLE ),	// OWTF2
+	DEFINE_PRED_FIELD( m_bUltimateActive, FIELD_BOOLEAN, FTYPEDESC_INSENDTABLE ),	// OWTF2
 	DEFINE_PRED_FIELD( m_flNextRageEarnTime, FIELD_FLOAT, FTYPEDESC_INSENDTABLE ),
 	DEFINE_PRED_FIELD( m_flEnergyDrinkMeter, FIELD_FLOAT, FTYPEDESC_INSENDTABLE ),
 	DEFINE_PRED_FIELD( m_flHypeMeter, FIELD_FLOAT, FTYPEDESC_INSENDTABLE ),
@@ -516,6 +524,9 @@ BEGIN_SEND_TABLE_NOBASE( CTFPlayerShared, DT_TFPlayerSharedLocal )
 	SendPropTime( SENDINFO( m_flStealthNextChangeTime ) ),
 	SendPropFloat( SENDINFO( m_flRageMeter ), 0, SPROP_NOSCALE, 0.0, 100.0 ),
 	SendPropBool( SENDINFO( m_bRageDraining ) ),
+	SendPropBool( SENDINFO( m_bVeteranSprinting ) ),	// OWTF2
+	SendPropFloat( SENDINFO( m_flUltimateCharge ), 0, SPROP_NOSCALE ),	// OWTF2
+	SendPropBool( SENDINFO( m_bUltimateActive ) ),	// OWTF2
 	SendPropTime( SENDINFO( m_flNextRageEarnTime ) ),
 	SendPropBool( SENDINFO( m_bInUpgradeZone ) ),
 	SendPropArray3( SENDINFO_ARRAY3( m_flItemChargeMeter ), SendPropFloat( SENDINFO_ARRAY( m_flItemChargeMeter ), -1, SPROP_NOSCALE ) ),
@@ -811,6 +822,11 @@ CTFPlayerShared::CTFPlayerShared()
 	m_bLastDisguisedAsOwnTeam = false;
 
 	m_bRageDraining = false;
+	m_bVeteranSprinting = false;	// OWTF2
+	m_flUltimateCharge = 0.0f;	// OWTF2
+	m_bUltimateActive = false;	// OWTF2
+	m_iUltimateChargeClass = TF_CLASS_UNDEFINED;	// OWTF2
+	m_flUltimateLastThink = 0.0f;	// OWTF2
 	m_bInUpgradeZone = false;
 	m_bPhaseFXOn = false;
 	ResetRageBuffs();
@@ -976,6 +992,9 @@ void CTFPlayerShared::ResetRageBuffs( void )
 //-----------------------------------------------------------------------------
 void CTFPlayerShared::Spawn( void )
 {
+	// OWTF2: abilities start off on every spawn
+	Veteran_ResetAbilities( m_pOuter );
+
 #ifdef GAME_DLL
 	m_hPeeAttacker = NULL;
 
@@ -2334,6 +2353,9 @@ int CTFPlayerShared::GetDisguiseMaxBuffedHealth( bool bIgnoreAttributes /*= fals
 void CTFPlayerShared::ConditionGameRulesThink( void )
 {
 #ifdef GAME_DLL
+
+	// OWTF2: ultimate charge and drain (runs for dead players too)
+	Ultimate_Think( m_pOuter );
 
 	m_ConditionList.ServerThink();
 
@@ -11126,6 +11148,9 @@ float CTFPlayer::TeamFortress_CalculateMaxSpeed( bool bIgnoreSpecialAbility /*= 
 		}
 	}
 
+	// OWTF2: Veteran abilities (Sprint)
+	maxfbspeed *= Veteran_GetMaxSpeedMultiplier( this );
+
 	return maxfbspeed;
 }
 
@@ -11619,6 +11644,11 @@ int CTFPlayer::GetNumObjects( int iObjectType, int iObjectMode /*= 0*/ )
 void CTFPlayer::ItemPostFrame()
 {
 	m_Shared.UpdateItemChargeMeters();
+
+	// OWTF2: Veteran ability input (predicted)
+	Veteran_AbilityPostFrame( this );
+	// OWTF2: ultimate input
+	Ultimate_PostFrame( this );
 
 	// cache buttons because some weapons' ItemPostFrame could change m_nButtons against other weapons
 	int nButtons = m_nButtons;

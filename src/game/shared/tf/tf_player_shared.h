@@ -505,6 +505,14 @@ public:
 	void	ResetRageMeter( void );
 	void	PulseRageBuff( ERageBuffSlot eBuffSlot );
 	void	StartRageDrain( void ) { m_bRageDraining = true; }
+	// OWTF2: Veteran Sprint toggle
+	bool	IsVeteranSprinting( void ) const { return m_bVeteranSprinting; }
+	void	SetVeteranSprinting( bool bSprinting ) { m_bVeteranSprinting = bSprinting; }
+	// OWTF2: ultimate state. Use the Ultimate_* functions (tf_ultimate.h), which apply the rules.
+	float	GetUltimateCharge( void ) const { return m_flUltimateCharge; }
+	void	SetUltimateCharge( float flPoints ) { m_flUltimateCharge = MAX( 0.0f, flPoints ); }
+	bool	IsUltimateActive( void ) const { return m_bUltimateActive; }
+	void	SetUltimateActive( bool bActive ) { m_bUltimateActive = bActive; }
 	void	ResetRageSystem( void );
 
 	void	ActivateRageBuff( CBaseEntity *pBuffItem, int iBuffType );
@@ -1105,6 +1113,18 @@ private:
 	CNetworkVar( float, m_flRageMeter );
 	CNetworkVar( bool, m_bRageDraining );
 	CNetworkVar( float, m_flNextRageEarnTime );
+
+	// OWTF2: Veteran abilities (logic in tf_veteran_abilities.cpp)
+	CNetworkVar( bool, m_bVeteranSprinting );
+
+	// OWTF2: ultimate (logic in tf_ultimate.cpp)
+	CNetworkVar( float, m_flUltimateCharge );	// points, 0..class ultimate_cost
+	CNetworkVar( bool, m_bUltimateActive );
+public:
+	// Server bookkeeping for tf_ultimate.cpp (not networked)
+	int		m_iUltimateChargeClass;
+	float	m_flUltimateLastThink;
+private:
 
 	RageBuff m_RageBuffSlots[kBuffSlot_MAX];
 

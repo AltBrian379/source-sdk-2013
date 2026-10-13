@@ -12,6 +12,11 @@
 
 #include "tf_shareddefs.h"
 
+// OWTF2: MvM tips are stored as "Tip_MvM_<n>_*" for the 9 stock classes plus a general bucket at
+// n = 10, which used to equal TF_LAST_NORMAL_CLASS. New classes shifted that, so name the bucket.
+// GetRandomMvMTip reports this value in iClassUsed when it picks a general tip.
+#define TF_MVM_TIP_GENERAL_BUCKET	( TF_CLASS_ENGINEER + 1 )
+
 
 struct CaptainCanteenAsset_t
 {

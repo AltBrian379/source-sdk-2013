@@ -1,0 +1,48 @@
+//
+// OWTF2 - Veteran Player Class
+//
+// Plain .txt is loaded before the encrypted .ctx (see ReadEncryptedKVFile), so no encryption is needed.
+// Placeholder stats copied from the Sniper until the hero's own values are tuned.
+//
+PlayerClass
+{
+	// Attributes.
+	"name"			"veteran"
+	"model"			"models/player/sniper.mdl"
+	"model_hwm"		"models/player/hwm/sniper.mdl"
+	"model_hands"	"models/weapons/c_models/c_sniper_arms.mdl"
+	"localize_name"	"TF_Class_Name_Veteran"
+	"speed_max"		"300"
+	"health_max"	"125"
+	"armor_max"		"0"
+
+	// Ultimate (src/game/shared/tf/tf_ultimate.h). Approximately the source hero's values; tune here.
+	"ultimate_cost"		"2310"	// points to fill (passive 5/s, 1 per damage, 1 per heal)
+	"ultimate_duration"	"6"		// seconds it drains over once used; 0 = spent instantly
+
+	// Weapons. The real weapon comes from the item loadout (items_owtf2.txt, defindex 60000);
+	// these legacy entries are unused.
+	"weapon1"		""
+	"weapon2"		""
+	"weapon3"		""
+
+	//Thirdperson
+	"cameraoffset_forward"	"85"
+	"cameraoffset_right"	"25"
+	"cameraoffset_up"		"0"
+
+	AmmoMax
+	{
+		"tf_ammo_primary"	"75"	// reserve for the rifle (SMG placeholder: 25 clip + 75)
+		"tf_ammo_secondary"	"0"
+		"tf_ammo_metal"		"0"
+		"tf_ammo_grenades1"	"0"
+		"tf_ammo_grenades2"	"0"
+	}
+
+	// Death Sounds
+	"sound_death"				"Sniper.Death"
+	"sound_crit_death"			"Sniper.CritDeath"
+	"sound_melee_death"			"Sniper.MeleeDeath"
+	"sound_explosion_death"		"Sniper.ExplosionDeath"
+}

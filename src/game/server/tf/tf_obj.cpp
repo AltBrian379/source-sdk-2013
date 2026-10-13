@@ -5,6 +5,7 @@
 // $NoKeywords: $
 //=============================================================================//
 #include "cbase.h"
+#include "tf_ultimate.h"	// OWTF2
 #include "tf_player.h"
 #include "tf_team.h"
 #include "tf_obj.h"
@@ -2011,6 +2012,7 @@ int CBaseObject::OnTakeDamage( const CTakeDamageInfo &info )
 	if ( flDamage )
 	{
 		m_iLifetimeDamage += floor( Min( flDamage, m_flHealth ) );
+		Ultimate_OnDamageDealt( info, this, Min( flDamage, m_flHealth ), 0.0f );	// OWTF2: ultimate charge (buildings have no overheal)
 		if ( m_iLifetimeDamage > tf_obj_damage_tank_achievement_amount.GetInt() && GetBuilder() )
 		{
 			GetBuilder()->AwardAchievement( ACHIEVEMENT_TF_ENGINEER_TANK_DAMAGE );

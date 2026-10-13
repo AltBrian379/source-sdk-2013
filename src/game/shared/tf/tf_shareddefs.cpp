@@ -47,6 +47,7 @@ const char *g_aPlayerClassNames[TF_CLASS_MENU_BUTTONS] =
 	"#TF_Class_Name_Pyro",
 	"#TF_Class_Name_Spy",
 	"#TF_Class_Name_Engineer",
+	"#TF_Class_Name_Veteran",	// OWTF2: new class
 	"#TF_Class_Name_Civilian",
 	"",
 	"#TF_Random"
@@ -64,6 +65,7 @@ const char *g_aPlayerClassNames_NonLocalized[TF_CLASS_MENU_BUTTONS] =
 	"Pyro",
 	"Spy",
 	"Engineer",
+	"Veteran",	// OWTF2: new class
 	"Civilian",
 	"",
 	"Random"
@@ -81,6 +83,7 @@ const char *g_aRawPlayerClassNamesShort[TF_CLASS_MENU_BUTTONS] =
 	"pyro",
 	"spy",
 	"engineer",
+	"veteran",	// OWTF2: new class
 	"civilian",
 	"",
 	"random"
@@ -98,6 +101,7 @@ const char *g_aRawPlayerClassNames[TF_CLASS_MENU_BUTTONS] =
 	"pyro",
 	"spy",
 	"engineer",
+	"veteran",	// OWTF2: new class
 	"civilian",
 	"",
 	"random"
@@ -116,6 +120,7 @@ const char g_szBotModels[][ MAX_PATH ] =
 	"models/bots/pyro/bot_pyro.mdl",
 	"models/bots/spy/bot_spy.mdl",
 	"models/bots/engineer/bot_engineer.mdl",
+	"models/bots/sniper/bot_sniper.mdl",	// OWTF2: Veteran uses the Sniper model
 };
 
 const char g_szPlayerRobotModels[][MAX_PATH] =
@@ -131,6 +136,7 @@ const char g_szPlayerRobotModels[][MAX_PATH] =
 	"models/bots/pyro/bot_pyro_human_anim.mdl",
 	"models/bots/spy/bot_spy_human_anims.mdl",
 	"models/bots/engineer/bot_engineer_human_anim.mdl",
+	"models/bots/sniper/bot_sniper_human_anim.mdl",	// OWTF2: Veteran uses the Sniper model
 };
 
 const char g_szBotBossModels[][ MAX_PATH ] = 
@@ -146,6 +152,7 @@ const char g_szBotBossModels[][ MAX_PATH ] =
 	"models/bots/pyro_boss/bot_pyro_boss.mdl",
 	"models/bots/spy/bot_spy.mdl",
 	"models/bots/engineer/bot_engineer.mdl",
+	"models/bots/sniper/bot_sniper.mdl",	// OWTF2: Veteran uses the Sniper model
 };
 
 const char g_szBotBossSentryBusterModel[ MAX_PATH ] = "models/bots/demo/bot_sentry_buster.mdl";
@@ -164,6 +171,7 @@ const char g_szRomePromoItems_Hat[][ MAX_PATH ] =
 	"tw_pyrobot_helmet",
 	"tw_spybot_hood",
 	"tw_engineerbot_helmet",
+	"tw_sniperbot_helmet",	// OWTF2: Veteran uses the Sniper model
 };
 
 const char g_szRomePromoItems_Misc[][ MAX_PATH ] = 
@@ -179,6 +187,7 @@ const char g_szRomePromoItems_Misc[][ MAX_PATH ] =
 	"tw_pyrobot_armor",
 	"tw_spybot_armor",
 	"tw_engineerbot_armor",
+	"tw_sniperbot_armor",	// OWTF2: Veteran uses the Sniper model
 };
 
 const char *g_pszBreadModels[] = 
@@ -192,6 +201,7 @@ const char *g_pszBreadModels[] =
 	"models/weapons/c_models/c_bread/c_bread_pretzel.mdl",		// Medic
 	"models/weapons/c_models/c_bread/c_bread_ration.mdl",		// Soldier
 	"models/weapons/c_models/c_bread/c_bread_russianblack.mdl",	// Heavy?
+	"models/weapons/c_models/c_bread/c_bread_plainloaf.mdl",	// OWTF2: Veteran. CObjectTeleporter indexes this by class count.
 };
 
 int GetClassIndexFromString( const char *pClassName, int nLastClassIndex/*=TF_LAST_NORMAL_CLASS*/ )
@@ -213,7 +223,7 @@ int GetClassIndexFromString( const char *pClassName, int nLastClassIndex/*=TF_LA
 	return TF_CLASS_UNDEFINED;
 }
 
-int iRemapIndexToClass[TF_CLASS_MENU_BUTTONS] =
+int iRemapIndexToClass[] =	// OWTF2: unsized so the assert below catches a missing class
 {
 	0,
 		TF_CLASS_SCOUT,
@@ -225,10 +235,12 @@ int iRemapIndexToClass[TF_CLASS_MENU_BUTTONS] =
 		TF_CLASS_MEDIC,
 		TF_CLASS_SNIPER,
 		TF_CLASS_SPY,
+		TF_CLASS_VETERAN,	// OWTF2: new class, menu slot 10
 		0,
 		0,
 		TF_CLASS_RANDOM
 };
+COMPILE_TIME_ASSERT( ARRAYSIZE( iRemapIndexToClass ) == TF_CLASS_MENU_BUTTONS );	// OWTF2
 
 int GetRemappedMenuIndexForClass( int iClass )
 {
@@ -708,6 +720,7 @@ const char *g_aWeaponNames[] =
 	"TF_WEAPON_JAR_GAS",
 	"TF_WEAPON_GRENADE_JAR_GAS",
 	"TF_WEPON_FLAME_BALL",
+	"TF_WEAPON_VETERAN_RIFLE",	// OWTF2
 
 };
 COMPILE_TIME_ASSERT( ARRAYSIZE( g_aWeaponNames ) == TF_WEAPON_COUNT );
@@ -824,6 +837,7 @@ int g_aWeaponDamageTypes[] =
 	DMG_GENERIC, // TF_WEAPON_JAR_GAS
 	DMG_GENERIC, // TF_WEAPON_GRENADE_JAR_GAS
 	DMG_GENERIC | DMG_PREVENT_PHYSICS_FORCE, // TF_WEAPON_FLAME_BALL
+	DMG_BULLET | DMG_USEDISTANCEMOD,		// TF_WEAPON_VETERAN_RIFLE, OWTF2: same as the SMG for now
 
 };
 
@@ -1640,6 +1654,7 @@ wpntranslation_class_weapons_t pszWpnEntTranslationList[] =
 			"tf_weapon_shotgun_pyro",	// TF_CLASS_PYRO,
 			"",							// TF_CLASS_SPY,
 			"tf_weapon_shotgun_primary",// TF_CLASS_ENGINEER,		
+			"",							// TF_CLASS_VETERAN, OWTF2: new class
 		}
 	},
 
@@ -1656,6 +1671,7 @@ wpntranslation_class_weapons_t pszWpnEntTranslationList[] =
 			"",							// TF_CLASS_PYRO,
 			"",							// TF_CLASS_SPY,
 			"tf_weapon_pistol",			// TF_CLASS_ENGINEER,		
+			"",							// TF_CLASS_VETERAN, OWTF2: new class
 		}
 	},
 
@@ -1672,6 +1688,7 @@ wpntranslation_class_weapons_t pszWpnEntTranslationList[] =
 			"",							// TF_CLASS_PYRO,
 			"",							// TF_CLASS_SPY,
 			"",							// TF_CLASS_ENGINEER,		
+			"",							// TF_CLASS_VETERAN, OWTF2: new class
 		}
 	},
 	{
@@ -1687,6 +1704,7 @@ wpntranslation_class_weapons_t pszWpnEntTranslationList[] =
 			"",							// TF_CLASS_PYRO,
 			"",							// TF_CLASS_SPY,
 			"",							// TF_CLASS_ENGINEER,		
+			"",							// TF_CLASS_VETERAN, OWTF2: new class
 		}
 	},
 	{
@@ -1702,6 +1720,7 @@ wpntranslation_class_weapons_t pszWpnEntTranslationList[] =
 			"tf_weapon_fireaxe",		// TF_CLASS_PYRO,
 			"tf_weapon_knife",			// TF_CLASS_SPY,
 			"tf_weapon_wrench",			// TF_CLASS_ENGINEER,		
+			"",							// TF_CLASS_VETERAN, OWTF2: new class
 		}
 	},
 	{
@@ -1717,6 +1736,7 @@ wpntranslation_class_weapons_t pszWpnEntTranslationList[] =
 			"tf_weapon_throwable_secondary",			// TF_CLASS_PYRO,
 			"tf_weapon_throwable_secondary",			// TF_CLASS_SPY,
 			"tf_weapon_throwable_secondary",			// TF_CLASS_ENGINEER,		
+			"",							// TF_CLASS_VETERAN, OWTF2: new class
 		}
 	},
 	{
@@ -1732,6 +1752,7 @@ wpntranslation_class_weapons_t pszWpnEntTranslationList[] =
 			"",			// TF_CLASS_PYRO,
 			""			// TF_CLASS_SPY,
 			"",			// TF_CLASS_ENGINEER,		
+			"",							// TF_CLASS_VETERAN, OWTF2: new class
 		}
 	},
 	{
@@ -1747,6 +1768,7 @@ wpntranslation_class_weapons_t pszWpnEntTranslationList[] =
 			"",			// TF_CLASS_PYRO,
 			"tf_weapon_revolver",				// TF_CLASS_SPY,
 			"tf_weapon_revolver_secondary",		// TF_CLASS_ENGINEER,		
+			"",							// TF_CLASS_VETERAN, OWTF2: new class
 		}
 	},
 };
@@ -1865,6 +1887,8 @@ const char *g_pszClassIcons[SCOREBOARD_CLASS_ICONS] =
 	"../hud/leaderboard_class_pyro",
 	"../hud/leaderboard_class_spy",
 	"../hud/leaderboard_class_engineer",
+	// OWTF2: Veteran uses the Sniper icons until it has its own art
+	"../hud/leaderboard_class_sniper",
 	"../hud/leaderboard_class_scout_d",
 	"../hud/leaderboard_class_sniper_d",
 	"../hud/leaderboard_class_soldier_d",
@@ -1874,7 +1898,10 @@ const char *g_pszClassIcons[SCOREBOARD_CLASS_ICONS] =
 	"../hud/leaderboard_class_pyro_d",
 	"../hud/leaderboard_class_spy_d",
 	"../hud/leaderboard_class_engineer_d",
+	// OWTF2: Veteran uses the Sniper icons until it has its own art
+	"../hud/leaderboard_class_sniper_d",
 };
+COMPILE_TIME_ASSERT( ARRAYSIZE( g_pszClassIcons ) == SCOREBOARD_CLASS_ICONS );	// OWTF2: catch a missing class row
 
 const char *g_pszClassIconsAlt[SCOREBOARD_CLASS_ICONS] =
 {
@@ -1888,6 +1915,8 @@ const char *g_pszClassIconsAlt[SCOREBOARD_CLASS_ICONS] =
 	"class_icons/class_icon_orange_pyro",
 	"class_icons/class_icon_orange_spy",
 	"class_icons/class_icon_orange_engineer",
+	// OWTF2: Veteran uses the Sniper icons until it has its own art
+	"class_icons/class_icon_orange_sniper",
 	"class_icons/class_icon_orange_scout_d",
 	"class_icons/class_icon_orange_sniper_d",
 	"class_icons/class_icon_orange_soldier_d",
@@ -1897,7 +1926,10 @@ const char *g_pszClassIconsAlt[SCOREBOARD_CLASS_ICONS] =
 	"class_icons/class_icon_orange_pyro_d",
 	"class_icons/class_icon_orange_spy_d",
 	"class_icons/class_icon_orange_engineer_d",
+	// OWTF2: Veteran uses the Sniper icons until it has its own art
+	"class_icons/class_icon_orange_sniper_d",
 };
+COMPILE_TIME_ASSERT( ARRAYSIZE( g_pszClassIconsAlt ) == SCOREBOARD_CLASS_ICONS );	// OWTF2: catch a missing class row
 
 const char *g_pszItemClassImagesRed[] =
 {
@@ -1911,6 +1943,7 @@ const char *g_pszItemClassImagesRed[] =
 	"class_portraits/pyro",			// TF_CLASS_PYRO,
 	"class_portraits/spy",			// TF_CLASS_SPY,
 	"class_portraits/engineer",		// TF_CLASS_ENGINEER,
+	"class_portraits/sniper",		// TF_CLASS_VETERAN, OWTF2: Sniper art for now
 	"class_portraits/scout_grey",		// TF_CLASS_SCOUT,			
 	"class_portraits/sniper_grey",		// TF_CLASS_SNIPER,
 	"class_portraits/soldier_grey",		// TF_CLASS_SOLDIER,
@@ -1920,7 +1953,9 @@ const char *g_pszItemClassImagesRed[] =
 	"class_portraits/pyro_grey",		// TF_CLASS_PYRO,
 	"class_portraits/spy_grey",			// TF_CLASS_SPY,
 	"class_portraits/engineer_grey",	// TF_CLASS_ENGINEER,
+	"class_portraits/sniper_grey",		// TF_CLASS_VETERAN, OWTF2: Sniper art for now
 };
+COMPILE_TIME_ASSERT( ARRAYSIZE( g_pszItemClassImagesRed ) == SCOREBOARD_CLASS_ICONS );	// OWTF2: catch a missing class row
 
 const char *g_pszItemClassImagesBlue[] =
 {
@@ -1934,6 +1969,7 @@ const char *g_pszItemClassImagesBlue[] =
 	"class_portraits/pyro_blue",		// TF_CLASS_PYRO,
 	"class_portraits/spy_blue",			// TF_CLASS_SPY,
 	"class_portraits/engineer_blue",	// TF_CLASS_ENGINEER,
+	"class_portraits/sniper_blue",		// TF_CLASS_VETERAN, OWTF2: Sniper art for now
 	"class_portraits/scout_blue_grey",		// TF_CLASS_SCOUT,			
 	"class_portraits/sniper_blue_grey",		// TF_CLASS_SNIPER,
 	"class_portraits/soldier_blue_grey",	// TF_CLASS_SOLDIER,
@@ -1943,7 +1979,9 @@ const char *g_pszItemClassImagesBlue[] =
 	"class_portraits/pyro_blue_grey",		// TF_CLASS_PYRO,
 	"class_portraits/spy_blue_grey",		// TF_CLASS_SPY,
 	"class_portraits/engineer_blue_grey",	// TF_CLASS_ENGINEER,
+	"class_portraits/sniper_blue_grey",		// TF_CLASS_VETERAN, OWTF2: Sniper art for now
 };
+COMPILE_TIME_ASSERT( ARRAYSIZE( g_pszItemClassImagesBlue ) == SCOREBOARD_CLASS_ICONS );	// OWTF2: catch a missing class row
 
 const char *g_pszCompetitiveMedalImages[] =
 {

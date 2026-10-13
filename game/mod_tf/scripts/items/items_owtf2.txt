@@ -1,0 +1,62 @@
+// OWTF2: the mod's item definitions.
+//
+// Merged into TF2's scripts/items/items_game.txt when the item schema loads
+// (OWTF2_MergeModItemSchema, src/game/shared/tf/tf_owtf2_items.cpp). Same layout as
+// items_game.txt: each top-level section here is merged into the section of the same
+// name, and an entry with an existing key replaces it.
+//
+// Mod item definition indices start at 60000.
+"items_owtf2"
+{
+	"items"
+	{
+		// Veteran primary. PLACEHOLDER: SMG model, stats and icon.
+		// Self-contained (no prefab): TF2's SMG prefab would also make it usable by the Sniper.
+		"60000"
+		{
+			"name"						"OWTF2_WEAPON_VETERAN_RIFLE"
+			"item_class"				"tf_weapon_veteran_rifle"
+			"craft_class"				""
+			"item_type_name"			"#OWTF2_Weapon_VeteranRifle_Type"
+			"item_name"					"#OWTF2_Weapon_VeteranRifle"
+			"item_description"			"#OWTF2_Weapon_VeteranRifle_Desc"
+			"item_slot"					"primary"
+			"anim_slot"					"SECONDARY"	// Sniper body + SMG: use the Sniper's SMG animations
+			"item_quality"				"normal"
+			"baseitem"					"1"
+			"min_ilevel"				"1"
+			"max_ilevel"				"1"
+			"show_in_armory"			"0"
+			"image_inventory"			"backpack/weapons/w_models/w_smg"
+			"image_inventory_size_w"	"128"
+			"image_inventory_size_h"	"82"
+			"model_player"				"models/weapons/c_models/c_smg/c_smg.mdl"
+			"attach_to_hands"			"1"
+			"inspect_panel_dist"		"39"
+			"used_by_classes"
+			{
+				"veteran"	"1"
+			}
+			"tags"
+			{
+				"can_deal_damage"					"1"
+				"can_deal_critical_damage"			"1"
+				"can_deal_long_distance_damage"		"1"
+			}
+			"visuals"
+			{
+				"styles"
+				{
+					"0"
+					{
+						"skin_red"		"0"
+						"skin_blu"		"1"
+						"selectable"	"0"
+					}
+				}
+			}
+			"mouse_pressed_sound"		"ui/item_light_gun_pickup.wav"
+			"drop_sound"				"ui/item_light_gun_drop.wav"
+		}
+	}
+}

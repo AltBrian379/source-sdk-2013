@@ -53,9 +53,21 @@ if (-not $msbuild) {
     exit 1
 }
 
-# 3. Pick the platform the solution defines for this configuration (prefer x64).
-$slnText  = Get-Content $sln -Raw
-$platform = if ($slnText -match [regex]::Escape("$Config|x64")) { 'x64' } else { 'Win32' }
+# 3. Pick the platform the solution defines for this configuration (prefer 64-bit).
+# Read only the solution-level section: VPC names the platform 'win64' there, while
+# per-project mappings below it use 'x64', which MSBuild rejects as a solution platform.
+$slnText = Get-Content $sln -Raw
+if ($slnText -notmatch '(?s)SolutionConfigurationPlatforms\) = preSolution(.*?)EndGlobalSection') {
+    Write-Host "No SolutionConfigurationPlatforms section in $sln." -ForegroundColor Red
+    exit 1
+}
+$slnPlatforms = [regex]::Matches($Matches[1], "(?m)^\s*$([regex]::Escape($Config))\|([^\s=]+)\s*=") |
+    ForEach-Object { $_.Groups[1].Value }
+$platform = @('win64', 'x64', 'Win32', 'win32') | Where-Object { $slnPlatforms -contains $_ } | Select-Object -First 1
+if (-not $platform) {
+    Write-Host "Solution defines no platform for configuration '$Config' (found: $($slnPlatforms -join ', '))." -ForegroundColor Red
+    exit 1
+}
 
 # 4. Build.
 Write-Host "Building $(Split-Path -Leaf $sln) ($Config|$platform)..."

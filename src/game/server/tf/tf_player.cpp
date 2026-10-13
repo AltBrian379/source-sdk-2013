@@ -7,6 +7,7 @@
 
 #include "cbase.h"
 #include "tf_player.h"
+#include "tf_ultimate.h"	// OWTF2
 #include "tf_gamerules.h"
 #include "tf_gamestats.h"
 #include "KeyValues.h"
@@ -10811,6 +10812,14 @@ int CTFPlayer::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 	if ( pTFAttacker && pTFAttacker != this )
 	{
 		pTFAttacker->RecordDamageEvent( info, (m_iHealth <= 0), iPrevHealth );
+	}
+
+	// OWTF2: ultimate charge from damage. Count health actually removed (no overkill);
+	// the part above max health only removed overheal.
+	{
+		const int iRemoved = iPrevHealth - MAX( 0, m_iHealth );
+		const int iOverheal = clamp( iPrevHealth - GetMaxHealth(), 0, iRemoved );
+		Ultimate_OnDamageDealt( info, this, iRemoved, iOverheal );
 	}
 
 	//No bleeding while invul or disguised.
