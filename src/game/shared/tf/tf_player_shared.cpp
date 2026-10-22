@@ -6,6 +6,10 @@
 #include "cbase.h"
 #include "tf_gamerules.h"
 #include "tf_player_shared.h"
+#include "tf_veteran_abilities.h"	// OWTF2
+#include "tf_ultimate.h"	// OWTF2
+#include "tf_heal_modifiers.h"	// OWTF2
+#include "tf_combatmed_abilities.h"	// OWTF2
 #include "takedamageinfo.h"
 #include "tf_weaponbase.h"
 #include "effect_dispatch_data.h"
@@ -339,6 +343,10 @@ BEGIN_RECV_TABLE_NOBASE( CTFPlayerShared, DT_TFPlayerSharedLocal )
 	RecvPropBool( RECVINFO( m_bLastDisguisedAsOwnTeam ) ),
 	RecvPropFloat( RECVINFO( m_flRageMeter ) ),
 	RecvPropBool( RECVINFO( m_bRageDraining ) ),
+	RecvPropBool( RECVINFO( m_bVeteranSprinting ) ),	// OWTF2
+	RecvPropFloat( RECVINFO( m_flUltimateCharge ) ),	// OWTF2
+	RecvPropBool( RECVINFO( m_bUltimateActive ) ),	// OWTF2
+	RecvPropTime( RECVINFO( m_flUltimateCastEndTime ) ),	// OWTF2
 	RecvPropTime( RECVINFO( m_flNextRageEarnTime ) ),
 	RecvPropBool( RECVINFO( m_bInUpgradeZone ) ),
 	RecvPropArray3( RECVINFO_ARRAY( m_flItemChargeMeter ), RecvPropFloat( RECVINFO( m_flItemChargeMeter[0] ) ) ),
@@ -439,6 +447,9 @@ BEGIN_RECV_TABLE_NOBASE( CTFPlayerShared, DT_TFPlayerShared )
 
 	RecvPropFloat( RECVINFO( m_flHolsterAnimTime ) ),
 	RecvPropEHandle( RECVINFO( m_hSwitchTo ) ),
+	RecvPropTime( RECVINFO( m_flNoHealEndTime ) ),	// OWTF2
+	RecvPropTime( RECVINFO( m_flHealBoostEndTime ) ),	// OWTF2
+	RecvPropTime( RECVINFO( m_flNanoBoostEndTime ) ),	// OWTF2
 END_RECV_TABLE()
 
 BEGIN_PREDICTION_DATA_NO_BASE( CTFPlayerShared )
@@ -447,6 +458,11 @@ BEGIN_PREDICTION_DATA_NO_BASE( CTFPlayerShared )
 	DEFINE_PRED_FIELD( m_flCloakMeter, FIELD_FLOAT, FTYPEDESC_INSENDTABLE ),
 	DEFINE_PRED_FIELD( m_flRageMeter, FIELD_FLOAT, FTYPEDESC_INSENDTABLE ),
 	DEFINE_PRED_FIELD( m_bRageDraining, FIELD_BOOLEAN, FTYPEDESC_INSENDTABLE ),
+	DEFINE_PRED_FIELD( m_bVeteranSprinting, FIELD_BOOLEAN, FTYPEDESC_INSENDTABLE ),	// OWTF2
+	// OWTF2: the ultimate's vars (m_flUltimateCharge, m_bUltimateActive, m_flUltimateCastEndTime)
+	// are deliberately not predicted. Only the server writes them, and the charge changes every
+	// tick (passive charge, drain): as prediction fields every update was a prediction error that
+	// forced a full re-prediction of the player, which showed as movement jitter.
 	DEFINE_PRED_FIELD( m_flNextRageEarnTime, FIELD_FLOAT, FTYPEDESC_INSENDTABLE ),
 	DEFINE_PRED_FIELD( m_flEnergyDrinkMeter, FIELD_FLOAT, FTYPEDESC_INSENDTABLE ),
 	DEFINE_PRED_FIELD( m_flHypeMeter, FIELD_FLOAT, FTYPEDESC_INSENDTABLE ),
@@ -516,6 +532,10 @@ BEGIN_SEND_TABLE_NOBASE( CTFPlayerShared, DT_TFPlayerSharedLocal )
 	SendPropTime( SENDINFO( m_flStealthNextChangeTime ) ),
 	SendPropFloat( SENDINFO( m_flRageMeter ), 0, SPROP_NOSCALE, 0.0, 100.0 ),
 	SendPropBool( SENDINFO( m_bRageDraining ) ),
+	SendPropBool( SENDINFO( m_bVeteranSprinting ) ),	// OWTF2
+	SendPropFloat( SENDINFO( m_flUltimateCharge ), 0, SPROP_NOSCALE ),	// OWTF2
+	SendPropBool( SENDINFO( m_bUltimateActive ) ),	// OWTF2
+	SendPropTime( SENDINFO( m_flUltimateCastEndTime ) ),	// OWTF2
 	SendPropTime( SENDINFO( m_flNextRageEarnTime ) ),
 	SendPropBool( SENDINFO( m_bInUpgradeZone ) ),
 	SendPropArray3( SENDINFO_ARRAY3( m_flItemChargeMeter ), SendPropFloat( SENDINFO_ARRAY( m_flItemChargeMeter ), -1, SPROP_NOSCALE ) ),
@@ -617,6 +637,9 @@ BEGIN_SEND_TABLE_NOBASE( CTFPlayerShared, DT_TFPlayerShared )
 	
 	SendPropFloat( SENDINFO( m_flHolsterAnimTime ) ),
 	SendPropEHandle( SENDINFO( m_hSwitchTo ) ),
+	SendPropTime( SENDINFO( m_flNoHealEndTime ) ),	// OWTF2
+	SendPropTime( SENDINFO( m_flHealBoostEndTime ) ),	// OWTF2
+	SendPropTime( SENDINFO( m_flNanoBoostEndTime ) ),	// OWTF2
 END_SEND_TABLE()
 
 #endif
@@ -811,6 +834,21 @@ CTFPlayerShared::CTFPlayerShared()
 	m_bLastDisguisedAsOwnTeam = false;
 
 	m_bRageDraining = false;
+	m_bVeteranSprinting = false;	// OWTF2
+	m_flUltimateCharge = 0.0f;	// OWTF2
+	m_bUltimateActive = false;	// OWTF2
+	m_flUltimateCastEndTime = 0.0f;	// OWTF2
+	m_bUltimateCastPending = false;	// OWTF2
+	m_iUltimateChargeClass = TF_CLASS_UNDEFINED;	// OWTF2
+	m_flUltimateLastThink = 0.0f;	// OWTF2
+	m_flNoHealEndTime = 0.0f;	// OWTF2
+	m_flHealBoostEndTime = 0.0f;	// OWTF2
+	m_flNanoBoostEndTime = 0.0f;	// OWTF2
+#ifdef GAME_DLL
+	m_flHealBoostScale = 1.0f;	// OWTF2
+	m_flDefenseBuffResistance = -1.0f;	// OWTF2
+	m_flSleepEndTime = 0.0f;	// OWTF2
+#endif
 	m_bInUpgradeZone = false;
 	m_bPhaseFXOn = false;
 	ResetRageBuffs();
@@ -976,6 +1014,15 @@ void CTFPlayerShared::ResetRageBuffs( void )
 //-----------------------------------------------------------------------------
 void CTFPlayerShared::Spawn( void )
 {
+	// OWTF2: abilities start off on every spawn
+	Veteran_ResetAbilities( m_pOuter );
+	CombatMed_ResetAbilities( m_pOuter );
+#ifdef GAME_DLL
+	HealModifiers_Clear( m_pOuter );	// OWTF2: no-heal and heal boost don't survive death
+	m_flSleepEndTime = 0.0f;	// OWTF2: nor does Sleep Dart sleep
+	m_flNanoBoostEndTime = 0.0f;	// OWTF2: nor Nano Boost
+#endif
+
 #ifdef GAME_DLL
 	m_hPeeAttacker = NULL;
 
@@ -1575,6 +1622,15 @@ void CTFPlayerShared::OnConditionAdded( ETFCond eCond )
 	case TF_COND_ZOOMED:
 		OnAddZoomed();
 		break;
+
+	// OWTF2: the Buffalo Steak's melee lock decides whether a Nano-boosted Heavy gets the
+	// energy buff's speed (TeamFortress_CalculateMaxSpeed); update it now.
+	case TF_COND_CANNOT_SWITCH_FROM_MELEE:
+		if ( CombatMed_IsNanoBoosted( m_pOuter ) )
+		{
+			m_pOuter->TeamFortress_SetSpeed();
+		}
+		break;
 	case TF_COND_HEALTH_BUFF:
 #ifdef GAME_DLL
 		m_flHealFraction = 0;
@@ -1895,6 +1951,14 @@ void CTFPlayerShared::OnConditionRemoved( ETFCond eCond )
 	{
 	case TF_COND_ZOOMED:
 		OnRemoveZoomed();
+		break;
+
+	// OWTF2: see OnConditionAdded
+	case TF_COND_CANNOT_SWITCH_FROM_MELEE:
+		if ( CombatMed_IsNanoBoosted( m_pOuter ) )
+		{
+			m_pOuter->TeamFortress_SetSpeed();
+		}
 		break;
 
 	case TF_COND_BURNING:
@@ -2335,6 +2399,11 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 {
 #ifdef GAME_DLL
 
+	// OWTF2: ultimate charge and drain (runs for dead players too)
+	Ultimate_Think( m_pOuter );
+	// OWTF2: Sleep Dart sleep ends on time
+	CombatMed_SleepThink( m_pOuter );
+
 	m_ConditionList.ServerThink();
 
 	if ( m_flNextCritUpdate < gpGlobals->curtime )
@@ -2422,6 +2491,7 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 		float flCurDisguiseOverheal = ( GetDisguiseMaxHealth() != 0 ) ? ( (float)GetDisguiseHealth() / (float)GetDisguiseMaxHealth() ) : ( flCurOverheal );
 
 		float fTotalHealAmount = 0.0f;
+		const float flHealFractionBeforeHealers = m_flHealFraction;	// OWTF2: see the heal modifiers below
 		for ( int i = 0; i < m_aHealers.Count(); i++ )
 		{
 			Assert( m_aHealers[i].pHealer );
@@ -2538,6 +2608,10 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 		{
 			m_flHealFraction *= ( 1.f - PYRO_AFTERBURN_HEALING_REDUCTION );
 		}
+
+		// OWTF2: no-heal and heal boost (tf_heal_modifiers.h) scale this frame's healing only, not
+		// the fraction carried over from earlier frames. TakeHealth below skips them (DMG_IGNORE_DEBUFFS).
+		m_flHealFraction = flHealFractionBeforeHealers + ( m_flHealFraction - flHealFractionBeforeHealers ) * HealModifiers_GetIncomingScale( m_pOuter );
 
 		int nHealthToAdd = (int)m_flHealFraction;
 		int nDisguiseHealthToAdd = (int)m_flDisguiseHealFraction;
@@ -4311,6 +4385,11 @@ void CTFPlayerShared::OnAddDefenseBuff( void )
 void CTFPlayerShared::OnRemoveDefenseBuff( void )
 {
 	OnRemoveSoldierDefensiveBuff();
+
+#ifdef GAME_DLL
+	// OWTF2: back to TF2's resistance for the next defense buff
+	m_flDefenseBuffResistance = -1.0f;
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -11068,7 +11147,10 @@ float CTFPlayer::TeamFortress_CalculateMaxSpeed( bool bIgnoreSpecialAbility /*= 
 	if ( playerclass == TF_CLASS_HEAVYWEAPONS )
 	{
 		float heavy_max_speed = default_speed * 1.35f;
-		if ( m_Shared.InCond( TF_COND_ENERGY_BUFF ) )
+		// OWTF2: Nano Boost uses the energy buff for its minicrits only, not this speed. The
+		// Buffalo Steak (which also locks the Heavy to melee) still gets it.
+		if ( m_Shared.InCond( TF_COND_ENERGY_BUFF ) &&
+			 ( !CombatMed_IsNanoBoosted( this ) || m_Shared.InCond( TF_COND_CANNOT_SWITCH_FROM_MELEE ) ) )
 		{
 			maxfbspeed *= 1.3f;
 			if ( maxfbspeed > heavy_max_speed )
@@ -11125,6 +11207,11 @@ float CTFPlayer::TeamFortress_CalculateMaxSpeed( bool bIgnoreSpecialAbility /*= 
 			break;
 		}
 	}
+
+	// OWTF2: Veteran abilities (Sprint)
+	maxfbspeed *= Veteran_GetMaxSpeedMultiplier( this );
+	// OWTF2: Combat Medic (scoped Biotic Rifle)
+	maxfbspeed *= CombatMed_GetMaxSpeedMultiplier( this );
 
 	return maxfbspeed;
 }
@@ -11619,6 +11706,13 @@ int CTFPlayer::GetNumObjects( int iObjectType, int iObjectMode /*= 0*/ )
 void CTFPlayer::ItemPostFrame()
 {
 	m_Shared.UpdateItemChargeMeters();
+
+	// OWTF2: Veteran ability input (predicted)
+	Veteran_AbilityPostFrame( this );
+	// OWTF2: Combat Medic ability input (SHIFT: Sleep Dart; predicted)
+	CombatMed_AbilityPostFrame( this );
+	// OWTF2: ultimate input
+	Ultimate_PostFrame( this );
 
 	// cache buttons because some weapons' ItemPostFrame could change m_nButtons against other weapons
 	int nButtons = m_nButtons;

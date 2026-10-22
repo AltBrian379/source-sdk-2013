@@ -332,6 +332,44 @@ private:
 };
 
 //-----------------------------------------------------------------------------
+// OWTF2: stock TF2 content keyed by class number (ClassTips_<n>_*, music.class_menu_0<n>)
+// uses the original enum, where Random was 12. Adding the mod's classes moved it (now 15).
+//-----------------------------------------------------------------------------
+static const int TF_STOCK_CLASS_RANDOM = 12;
+static int GetStockContentClassIndex( int iClass )
+{
+	return ( iClass == TF_CLASS_RANDOM ) ? TF_STOCK_CLASS_RANDOM : iClass;
+}
+
+//-----------------------------------------------------------------------------
+// OWTF2: the key of a class's chalkboard tips (ClassTips_<key>_*). Stock classes, Random and
+// the mod's classes numbered below the stock Random use their stock number. A mod class with
+// a number from 12 up would read Random's stock tips (Crusader = 12), so it uses its raw name.
+//-----------------------------------------------------------------------------
+static CFmtStr GetClassTipsKey( int iClass )
+{
+	if ( iClass >= TF_STOCK_CLASS_RANDOM && iClass < TF_CLASS_COUNT_ALL )
+		return CFmtStr( "%s", g_aRawPlayerClassNames[ iClass ] );
+
+	return CFmtStr( "%d", GetStockContentClassIndex( iClass ) );
+}
+
+//-----------------------------------------------------------------------------
+// OWTF2: the mod's classes have no menu art or music of their own yet; use the
+// stock class whose model they borrow.
+//-----------------------------------------------------------------------------
+static int GetPlaceholderContentClass( int iClass )
+{
+	switch ( iClass )
+	{
+	case TF_CLASS_VETERAN:		return TF_CLASS_SNIPER;
+	case TF_CLASS_COMBATMED:	return TF_CLASS_MEDIC;
+	case TF_CLASS_CRUSADER:		return TF_CLASS_DEMOMAN;
+	default:					return iClass;
+	}
+}
+
+//-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
 class CTFClassTipsPanel : public EditablePanel
@@ -373,13 +411,15 @@ public:
 			int nScrollToItem = 0;
 
 			// Get tip count
-			const wchar_t *wzTipCount = g_pVGuiLocalize->Find( CFmtStr( "ClassTips_%d_Count", iClass ) );
+			CFmtStr strTipClass = GetClassTipsKey( iClass );	// OWTF2: tips are keyed by the stock class number, or the raw name
+			const char *pszTipClass = strTipClass.Access();
+			const wchar_t *wzTipCount = g_pVGuiLocalize->Find( CFmtStr( "ClassTips_%s_Count", pszTipClass ) );	// OWTF2: was iClass
 			int nTipCount = wzTipCount ? _wtoi( wzTipCount ) : 0;
 			for ( int iTip = 1; iTip < nTipCount+1; ++iTip )
 			{
-				const wchar_t *pwszText = g_pVGuiLocalize->Find( CFmtStr( "#ClassTips_%d_%d", iClass, iTip ) );
-				const wchar_t *pwszTextMvM = g_pVGuiLocalize->Find( CFmtStr( "#ClassTips_%d_%d_MvM", iClass, iTip ) );
-				wchar_t *pwszIcon = g_pVGuiLocalize->Find( CFmtStr( "ClassTips_%d_%d_Icon", iClass, iTip ) );
+				const wchar_t *pwszText = g_pVGuiLocalize->Find( CFmtStr( "#ClassTips_%s_%d", pszTipClass, iTip ) );	// OWTF2: was iClass
+				const wchar_t *pwszTextMvM = g_pVGuiLocalize->Find( CFmtStr( "#ClassTips_%s_%d_MvM", pszTipClass, iTip ) );	// OWTF2: was iClass
+				wchar_t *pwszIcon = g_pVGuiLocalize->Find( CFmtStr( "ClassTips_%s_%d_Icon", pszTipClass, iTip ) );	// OWTF2: was iClass
 				char szIcon[MAX_PATH];
 
 				szIcon[0] = 0;
@@ -490,6 +530,9 @@ CTFClassMenu::CTFClassMenu( IViewPort *pViewPort )
 	m_pClassButtons[TF_CLASS_SNIPER] = new CExImageButton( this, "sniper", "", this );
 	m_pClassButtons[TF_CLASS_ENGINEER] = new CExImageButton( this, "engineer", "", this );
 	m_pClassButtons[TF_CLASS_SPY] = new CExImageButton( this, "spy", "", this );
+	m_pClassButtons[TF_CLASS_VETERAN] = new CExImageButton( this, "veteran", "", this );	// OWTF2: new class; laid out in ClassSelection.res
+	m_pClassButtons[TF_CLASS_COMBATMED] = new CExImageButton( this, "combatmed", "", this );	// OWTF2: new class; laid out in ClassSelection.res
+	m_pClassButtons[TF_CLASS_CRUSADER] = new CExImageButton( this, "crusader", "", this );	// OWTF2: new class; laid out in ClassSelection.res
 	m_pClassButtons[TF_CLASS_RANDOM] = new CExImageButton( this, "random", "", this );
 #endif
 
@@ -573,7 +616,9 @@ void CTFClassMenu::ApplySchemeSettings( IScheme *pScheme )
 		if ( !IsValidTFPlayerClass( i ) && i != TF_CLASS_RANDOM )
 			continue;
 
-		m_pClassButtons[i]->SetImageSelected( CFmtStr( "class_sel_sm_%s_%s", g_aRawPlayerClassNamesShort[i], pTeamExtension ).Access() );
+		// OWTF2: the mod's classes have no class_sel_sm_* art yet; use the stock class's images
+		const int iImageClass = GetPlaceholderContentClass( i );
+		m_pClassButtons[i]->SetImageSelected( CFmtStr( "class_sel_sm_%s_%s", g_aRawPlayerClassNamesShort[iImageClass], pTeamExtension ).Access() );	// OWTF2: was [i]
 		if( i != TF_CLASS_RANDOM )
 		{
 			m_pClassButtons[i]->SetArmedSound("misc/null.wav");
@@ -681,7 +726,7 @@ void CTFClassMenu::ShowPanel( bool bShow )
 	}
 }
 
-const char *g_pszLegacyClassSelectVCDWeapons[TF_LAST_NORMAL_CLASS] =
+const char *g_pszLegacyClassSelectVCDWeapons[] =	// OWTF2: unsized so the assert below catches a missing class
 {
 	"",										// TF_CLASS_UNDEFINED = 0,
 	"",										// TF_CLASS_SCOUT,				// weapons handled individually
@@ -693,9 +738,13 @@ const char *g_pszLegacyClassSelectVCDWeapons[TF_LAST_NORMAL_CLASS] =
 	"tf_weapon_flamethrower",				// TF_CLASS_PYRO,
 	"",										// TF_CLASS_SPY,				// weapons handled individually
 	"tf_weapon_wrench",						// TF_CLASS_ENGINEER,		
+	"",										// TF_CLASS_VETERAN, OWTF2: new class; weapons handled individually
+	"",										// TF_CLASS_COMBATMED, OWTF2: new class; weapons handled individually
+	"",										// TF_CLASS_CRUSADER, OWTF2: new class; weapons handled individually
 };
+COMPILE_TIME_ASSERT( ARRAYSIZE( g_pszLegacyClassSelectVCDWeapons ) == TF_LAST_NORMAL_CLASS );	// OWTF2
 
-int g_iLegacyClassSelectWeaponSlots[TF_LAST_NORMAL_CLASS] =
+int g_iLegacyClassSelectWeaponSlots[] =	// OWTF2: unsized so the assert below catches a missing class
 {
 	LOADOUT_POSITION_PRIMARY,		// TF_CLASS_UNDEFINED = 0,
 	LOADOUT_POSITION_PRIMARY,		// TF_CLASS_SCOUT,			// TF_FIRST_NORMAL_CLASS
@@ -707,7 +756,11 @@ int g_iLegacyClassSelectWeaponSlots[TF_LAST_NORMAL_CLASS] =
 	LOADOUT_POSITION_PRIMARY,		// TF_CLASS_PYRO,
 	LOADOUT_POSITION_MELEE,			// TF_CLASS_SPY,
 	LOADOUT_POSITION_MELEE,			// TF_CLASS_ENGINEER,		
+	LOADOUT_POSITION_PRIMARY,		// TF_CLASS_VETERAN, OWTF2: new class
+	LOADOUT_POSITION_PRIMARY,		// TF_CLASS_COMBATMED, OWTF2: new class
+	LOADOUT_POSITION_PRIMARY,		// TF_CLASS_CRUSADER, OWTF2: new class
 };
+COMPILE_TIME_ASSERT( ARRAYSIZE( g_iLegacyClassSelectWeaponSlots ) == TF_LAST_NORMAL_CLASS );	// OWTF2
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -810,13 +863,16 @@ void CTFClassMenu::SelectClass( int iClass )
 	enginesound->StopSoundByGuid( m_nBaseMusicGuid );
 	CBroadcastRecipientFilter filter;
 	char nClassMusicStr[64];
+	// OWTF2: the mod's classes have no menu music of their own; use the stock class's track. Music is
+	// numbered by the stock class enum, so Random maps back too. Plain int: sprintf below is varargs.
+	int iMusicClass = GetStockContentClassIndex( GetPlaceholderContentClass( iClass ) );
 	if ( TFGameRules() && TFGameRules()->IsMannVsMachineMode() )
 	{
-		sprintf( nClassMusicStr, "music.mvm_class_menu_0%i", iClass );
+		sprintf( nClassMusicStr, "music.mvm_class_menu_0%i", iMusicClass );	// OWTF2: was iClass
 	}
 	else
 	{
-		sprintf( nClassMusicStr, "music.class_menu_0%i", iClass );
+		sprintf( nClassMusicStr, "music.class_menu_0%i", iMusicClass );	// OWTF2: was iClass
 	}
 	CBaseEntity::EmitSound( filter, SOUND_FROM_UI_PANEL, nClassMusicStr );
 	m_nBaseMusicGuid = enginesound->GetGuidForLastSoundEmitted();
@@ -1351,8 +1407,12 @@ static const char *g_sDialogVariables[] = {
 	"numMedic",
 	"numSniper",
 	"numSpy",
+	"numVeteran",	// OWTF2: new class
+	"numCombatMed",	// OWTF2: new class
+	"numCrusader",	// OWTF2: new class
 	"",
 };
+COMPILE_TIME_ASSERT( ARRAYSIZE( g_sDialogVariables ) == TF_LAST_NORMAL_CLASS + 1 );	// OWTF2: catch a missing class row
 
 static const char *g_sClassImagesBlue[] = {
 	"",
@@ -1367,9 +1427,13 @@ static const char *g_sClassImagesBlue[] = {
 	"class_sel_sm_medic_blu",
 	"class_sel_sm_sniper_blu",
 	"class_sel_sm_spy_blu",
+	"class_sel_sm_sniper_blu",	// OWTF2: Veteran, Sniper art for now
+	"class_sel_sm_medic_blu",	// OWTF2: Combat Medic, Medic art for now
+	"class_sel_sm_demo_blu",	// OWTF2: Crusader, Demoman art for now
 
 	"class_sel_sm_scout_blu",
 };
+COMPILE_TIME_ASSERT( ARRAYSIZE( g_sClassImagesBlue ) == TF_LAST_NORMAL_CLASS + 1 );	// OWTF2: catch a missing class row
 
 static const char *g_sClassImagesRed[] = {
 	"",
@@ -1384,9 +1448,13 @@ static const char *g_sClassImagesRed[] = {
 	"class_sel_sm_medic_red",
 	"class_sel_sm_sniper_red",
 	"class_sel_sm_spy_red",
+	"class_sel_sm_sniper_red",	// OWTF2: Veteran, Sniper art for now
+	"class_sel_sm_medic_red",	// OWTF2: Combat Medic, Medic art for now
+	"class_sel_sm_demo_red",	// OWTF2: Crusader, Demoman art for now
 
 	"class_sel_sm_scout_red",
 };
+COMPILE_TIME_ASSERT( ARRAYSIZE( g_sClassImagesRed ) == TF_LAST_NORMAL_CLASS + 1 );	// OWTF2: catch a missing class row
 
 int g_ClassDefinesRemap[] = {
 	0,
@@ -1401,8 +1469,12 @@ int g_ClassDefinesRemap[] = {
 	TF_CLASS_MEDIC,
 	TF_CLASS_SNIPER,
 	TF_CLASS_SPY,
+	TF_CLASS_VETERAN,	// OWTF2: new class
+	TF_CLASS_COMBATMED,	// OWTF2: new class
+	TF_CLASS_CRUSADER,	// OWTF2: new class
 	TF_CLASS_CIVILIAN,
 };
+COMPILE_TIME_ASSERT( ARRAYSIZE( g_ClassDefinesRemap ) == TF_LAST_NORMAL_CLASS + 1 );	// OWTF2: catch a missing class row
 
 void CTFClassMenu::UpdateNumClassLabels( int iTeam )
 {

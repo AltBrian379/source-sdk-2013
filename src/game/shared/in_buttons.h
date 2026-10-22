@@ -37,5 +37,7 @@
 #define IN_GRENADE1		(1 << 23)	// grenade 1
 #define IN_GRENADE2		(1 << 24)	// grenade 2
 #define	IN_ATTACK3		(1 << 25)
+#define	IN_ATTACK4		(1 << 26)	// OWTF2: class ability key (+attack4). Veteran: Sprint
+#define	IN_ATTACK5		(1 << 27)	// OWTF2: ultimate ability key (+attack5)
 
 #endif // IN_BUTTONS_H

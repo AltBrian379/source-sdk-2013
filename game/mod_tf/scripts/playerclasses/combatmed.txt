@@ -1,0 +1,48 @@
+//
+// OWTF2 - Combat Medic Player Class
+//
+// Plain .txt is loaded before the encrypted .ctx (see ReadEncryptedKVFile), so no encryption is needed.
+// Placeholder model, hands and sounds from the Medic. Plan: docs/combatmed-plan.txt.
+//
+PlayerClass
+{
+	// Attributes.
+	"name"			"combatmed"
+	"model"			"models/player/medic.mdl"
+	"model_hwm"		"models/player/hwm/medic.mdl"
+	"model_hands"	"models/weapons/c_models/c_medic_arms.mdl"
+	"localize_name"	"TF_Class_Name_CombatMed"
+	"speed_max"		"280"	// OWTF2: ported heroes move at the Demoman's speed
+	"health_max"	"175"
+	"armor_max"		"0"
+
+	// Ultimate: Nano Boost (src/game/shared/tf/tf_ultimate.h, tf_combatmed_abilities.cpp).
+	"ultimate_cost"		"2300"	// Ana's 2300 points
+	"ultimate_duration"	"0"		// instant: the charge is spent at once; the boost lasts tf_combatmed_nano_duration on the target
+	"ultimate_cast_time"	"0"		// Ana's is instant
+
+	// Weapons come from the item loadout (items_owtf2.txt: Biotic Rifle 60002); these legacy entries are unused.
+	"weapon1"		""
+	"weapon2"		""
+	"weapon3"		""
+
+	//Thirdperson
+	"cameraoffset_forward"	"85"
+	"cameraoffset_right"	"25"
+	"cameraoffset_up"		"0"
+
+	AmmoMax
+	{
+		"tf_ammo_primary"	"45"	// Biotic Rifle reserve: 3 magazines, like the Veteran's 90 for 30
+		"tf_ammo_secondary"	"0"
+		"tf_ammo_metal"		"0"
+		"tf_ammo_grenades1"	"0"
+		"tf_ammo_grenades2"	"0"
+	}
+
+	// Death Sounds
+	"sound_death"				"Medic.Death"
+	"sound_crit_death"			"Medic.CritDeath"
+	"sound_melee_death"			"Medic.MeleeDeath"
+	"sound_explosion_death"		"Medic.ExplosionDeath"
+}

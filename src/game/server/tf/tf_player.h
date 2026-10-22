@@ -212,6 +212,8 @@ public:
 
 	virtual	bool		ShouldCollide( int collisionGroup, int contentsMask ) const;
 	void				ApplyPushFromDamage( const CTakeDamageInfo &info, Vector vecDir );
+	// OWTF2: as an inflictor (melee), let the weapon set the push direction (the alternating melee's sweep).
+	virtual void		AdjustDamageDirection( const CTakeDamageInfo &info, Vector &dir, CBaseEntity *pEnt ) OVERRIDE;
 	void				PlayDamageResistSound( float flStartDamage, float flModifiedDamage );
 	bool				CheckBlockBackstab( CTFPlayer *pTFAttacker );
 

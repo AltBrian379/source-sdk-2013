@@ -1,0 +1,24 @@
+// OWTF2: HUD copy of the spawn room "no entry" sign (materials/overlays/no_entry.vmt) for the
+// no-heal window, drawn over the health cross (tf_hud_playerstatus.cpp). Same texture and
+// distance-field edges, without the world material's distance and team fading.
+"UnlitGeneric"
+{
+	"$baseTexture" "overlays/no_entry"
+	"$translucent" 1
+	"$vertexcolor" 1
+	"$vertexalpha" 1
+	"$ignorez" 1
+
+	$softedges 1
+	$edgesoftnessstart 0.6
+	$edgesoftnessend 0.5
+
+	$outline 1
+	$outlinecolor "[0 0 0]"
+	$outlinealpha 1
+
+	$outlinestart0 0.4
+	$outlinestart1 0.52
+	$outlineend0 0.8
+	$outlineend1 0.92
+}

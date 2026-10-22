@@ -5,6 +5,9 @@
 //=============================================================================
 
 #include "cbase.h"
+#if defined( TF_DLL ) || defined( TF_CLIENT_DLL )
+#include "tf_owtf2_items.h"	// OWTF2
+#endif
 #include "econ_item_schema.h"
 #include "tier1/fmtstr.h"
 #include "tier1/UtlSortVector.h"
@@ -4421,6 +4424,10 @@ bool CEconItemSchema::BInitTextBuffer( CUtlBuffer &buffer, CUtlVector<CUtlString
 	m_pKVRawDefinition = new KeyValues( "CEconItemSchema" );
 	if ( m_pKVRawDefinition->LoadFromBuffer( NULL, buffer ) )
 	{
+#if defined( TF_DLL ) || defined( TF_CLIENT_DLL )
+		// OWTF2: add the mod's item definitions (items_game.txt itself is signature-checked)
+		OWTF2_MergeModItemSchema( m_pKVRawDefinition );
+#endif
 		return BInitSchema( m_pKVRawDefinition, pVecErrors )
 			&& BPostSchemaInit( pVecErrors );
 	}

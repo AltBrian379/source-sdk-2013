@@ -239,11 +239,13 @@ const wchar_t *CTFTips::GetRandomMvMTip( int &iClassUsed )
 	static wchar_t wzMvMTip[512] = L"";
 	static int iPrevMvMClass = -1;
 
-	iClassUsed = RandomInt( TF_FIRST_NORMAL_CLASS, TF_LAST_NORMAL_CLASS );
+	// OWTF2: pick from the stock classes and the general bucket only; new classes have no MvM tips.
+	// The wrap used to be "% TF_LAST_NORMAL_CLASS", which could also land on 0.
+	iClassUsed = RandomInt( TF_FIRST_NORMAL_CLASS, TF_MVM_TIP_GENERAL_BUCKET );
 
 	if ( iClassUsed == iPrevMvMClass )
 	{
-		iClassUsed = ( iClassUsed + 1 ) % TF_LAST_NORMAL_CLASS;
+		iClassUsed = ( iClassUsed % TF_MVM_TIP_GENERAL_BUCKET ) + 1;
 	}
 	iPrevMvMClass = iClassUsed;
 

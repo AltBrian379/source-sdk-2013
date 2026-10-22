@@ -6,6 +6,10 @@
 //=============================================================================
 
 #include "cbase.h"
+#include "tf_weapon_veteran_rifle.h"	// OWTF2
+#include "tf_weapon_veteran_field_rations.h"	// OWTF2
+#include "tf_weapon_combatmed_grenade.h"	// OWTF2
+#include "tf_weapon_combatmed_sleepdart.h"	// OWTF2
 #include "tf_hud_itemeffectmeter.h"
 #include "tf_weapon_bat.h"
 #include "tf_weapon_jar.h"
@@ -148,6 +152,109 @@ void CItemEffectMeterManager::Update( C_TFPlayer* pPlayer )
 			m_Meters[i]->Update( pPlayer );
 		}
 	}
+
+	PositionAboveUltimateMeter();	// OWTF2
+}
+
+// OWTF2: where the visible box sits inside an item effect meter's panel, in proportional
+// units (HudItemEffectMeter.res: a 100x50 panel, the box drawn around the label and bar),
+// and how far apart meters in a row are (TF2's x_offset for a second meter).
+static const int OWTF2_METER_BOX_RIGHT = 87;
+static const int OWTF2_METER_BOX_TOP = 20;
+static const int OWTF2_METER_SPACING = 50;
+
+//-----------------------------------------------------------------------------
+// Purpose: OWTF2: while the ultimate meter (tf_hud_ultimate.cpp) is showing, it takes the
+//          corner the item effect meters use. Line the visible meters up in a row on top of
+//          it instead, right-aligned with it, the first declared meter on the right (HELIX,
+//          then FIELD). CTFHudWeaponAmmo sits on top of the row (GetRowTopAboveUltimateMeter).
+//-----------------------------------------------------------------------------
+void CItemEffectMeterManager::PositionAboveUltimateMeter( void )
+{
+	Panel *pUltimate = dynamic_cast< Panel * >( gHUD.FindElement( "CHudUltimateMeter" ) );
+	if ( !pUltimate || !pUltimate->IsVisible() )
+	{
+		if ( m_bAboveUltimateMeter )
+		{
+			// Reload the .res files to get the stock positions back.
+			for ( int i = 0; i < m_Meters.Count(); i++ )
+			{
+				if ( m_Meters[i] )
+				{
+					m_Meters[i]->InvalidateLayout( false, true );
+				}
+			}
+			m_bAboveUltimateMeter = false;
+		}
+		return;
+	}
+
+	m_bAboveUltimateMeter = true;
+
+	// The ultimate meter's panel is wider than its background; align with the background.
+	int nUltX, nUltY, nUltWide, nUltTall;
+	pUltimate->GetBounds( nUltX, nUltY, nUltWide, nUltTall );
+	int nRight = nUltX + nUltWide;
+	int nTop = nUltY;
+	Panel *pUltimateBG = pUltimate->FindChildByName( "Background" );
+	if ( pUltimateBG )
+	{
+		int nBGX, nBGY, nBGWide, nBGTall;
+		pUltimateBG->GetBounds( nBGX, nBGY, nBGWide, nBGTall );
+		nRight = nUltX + nBGX + nBGWide;
+		nTop = nUltY + nBGY;
+	}
+
+	// Meters are added at the head of the list, so walk it backwards to go in declaration order.
+	int nIndex = 0;
+	for ( int i = m_Meters.Count() - 1; i >= 0; i-- )
+	{
+		CHudItemEffectMeter *pMeter = m_Meters[i];
+		if ( !pMeter || !pMeter->IsVisible() )
+			continue;
+
+		const HScheme hScheme = pMeter->GetScheme();
+		const int nX = nRight - scheme()->GetProportionalScaledValueEx( hScheme, OWTF2_METER_BOX_RIGHT + nIndex * OWTF2_METER_SPACING );
+		const int nY = nTop - pMeter->GetTall();
+
+		int nCurX, nCurY;
+		pMeter->GetPos( nCurX, nCurY );
+		if ( nCurX != nX || nCurY != nY )
+		{
+			pMeter->SetPos( nX, nY );
+		}
+
+		nIndex++;
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: OWTF2: top of the visible boxes of the meters placed on top of the ultimate
+//          meter. False if no meter is there.
+//-----------------------------------------------------------------------------
+bool CItemEffectMeterManager::GetRowTopAboveUltimateMeter( int &nTop )
+{
+	if ( !m_bAboveUltimateMeter )
+		return false;
+
+	bool bFound = false;
+	for ( int i = 0; i < m_Meters.Count(); i++ )
+	{
+		CHudItemEffectMeter *pMeter = m_Meters[i];
+		if ( !pMeter || !pMeter->IsVisible() )
+			continue;
+
+		int nX, nY;
+		pMeter->GetPos( nX, nY );
+		nY += scheme()->GetProportionalScaledValueEx( pMeter->GetScheme(), OWTF2_METER_BOX_TOP );
+		if ( !bFound || nY < nTop )
+		{
+			nTop = nY;
+			bFound = true;
+		}
+	}
+
+	return bFound;
 }
 
 //-----------------------------------------------------------------------------
@@ -321,6 +428,18 @@ void CHudItemEffectMeter::CreateHudElementsForClass( C_TFPlayer* pPlayer, CUtlVe
 		DECLARE_ITEM_EFFECT_METER( C_TFWeaponBuilder, TF_WEAPON_BUILDER, true, "resource/UI/HudItemEffectMeter_Sapper.res" );
 		DECLARE_ITEM_EFFECT_METER( CTFRevolver, TF_WEAPON_REVOLVER, false, "resource/UI/HUDItemEffectMeter_Spy.res" );
 
+		break;
+
+	// OWTF2: helix rockets and Field Rations cooldowns, the same meter as the Jarate's
+	case TF_CLASS_VETERAN:
+		DECLARE_ITEM_EFFECT_METER( CTFVeteranRifle, TF_WEAPON_VETERAN_RIFLE, true, NULL );
+		DECLARE_ITEM_EFFECT_METER( CTFVeteranFieldRations, TF_WEAPON_VETERAN_FIELD_RATIONS, true, "resource/UI/HudItemEffectMeter_VeteranField.res" );
+		break;
+
+	// OWTF2: Biotic Grenade and Sleep Dart cooldowns
+	case TF_CLASS_COMBATMED:
+		DECLARE_ITEM_EFFECT_METER( CTFCombatMedGrenade, TF_WEAPON_COMBATMED_GRENADE, true, NULL );
+		DECLARE_ITEM_EFFECT_METER( CTFCombatMedSleepDart, TF_WEAPON_COMBATMED_SLEEPDART, true, "resource/UI/HudItemEffectMeter_CombatMedSleep.res" );
 		break;
 
 	case TF_CLASS_ENGINEER:
@@ -952,7 +1071,11 @@ static const char *pszClassIcons[] = {
 	"../hud/leaderboard_class_pyro",
 	"../hud/leaderboard_class_spy",
 	"../hud/leaderboard_class_engineer",
+	"../hud/leaderboard_class_sniper",	// OWTF2: Veteran, Sniper art for now
+	"../hud/leaderboard_class_medic",	// OWTF2: Combat Medic, Medic art for now
+	"../hud/leaderboard_class_demo",	// OWTF2: Crusader, Demoman art for now
 };
+COMPILE_TIME_ASSERT( ARRAYSIZE( pszClassIcons ) == TF_LAST_NORMAL_CLASS );	// OWTF2: catch a missing class row
 
 template <>
 void CHudItemEffectMeter_Weapon< CTFMinigun >::Update( C_TFPlayer* pPlayer )

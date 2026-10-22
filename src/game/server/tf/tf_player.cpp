@@ -7,6 +7,7 @@
 
 #include "cbase.h"
 #include "tf_player.h"
+#include "tf_ultimate.h"	// OWTF2
 #include "tf_gamerules.h"
 #include "tf_gamestats.h"
 #include "KeyValues.h"
@@ -129,6 +130,7 @@
 #include "tf_weapon_slap.h"
 #include "func_croc.h"
 #include "tf_weapon_bonesaw.h"
+#include "tf_weapon_alternating_melee.h"	// OWTF2: sweep push direction (AdjustDamageDirection)
 #include "pointhurt.h"
 #include "info_camera_link.h"
 
@@ -136,6 +138,8 @@
 #include "haptics/haptic_utils.h"
 
 #include "gc_clientsystem.h"
+#include "tf_heal_modifiers.h"	// OWTF2
+#include "tf_combatmed_abilities.h"	// OWTF2: Sleep Dart wake-up
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -1851,7 +1855,7 @@ void CTFPlayer::RegenThink( void )
 		
 		flRegenAmount *= flScale;
 	}
-	m_flAccumulatedHealthRegen += flRegenAmount;
+	m_flAccumulatedHealthRegen += flRegenAmount * HealModifiers_GetIncomingScale( this );	// OWTF2: no-heal and heal boost (TakeHealth below skips them)
 
 // 	if ( m_Shared.InCond( TF_COND_HEALING_DEBUFF ) )
 // 	{
@@ -8435,6 +8439,15 @@ int CTFPlayer::TakeHealth( float flHealth, int bitsDamageType )
 		flHealth *= flHealingBonus;
 	}
 
+	// OWTF2: no-heal and heal boost (tf_heal_modifiers.h). The healer-list tick and class regen
+	// apply them to their own accumulators and pass DMG_IGNORE_DEBUFFS.
+	if ( !( bitsDamageType & DMG_IGNORE_DEBUFFS ) )
+	{
+		flHealth *= HealModifiers_GetIncomingScale( this );
+		if ( flHealth <= 0.0f )
+			return 0;
+	}
+
 	// Medigun healing and player/class regen use an accumulator, so they've already factored in debuffs.
 // 	if ( m_Shared.InCond( TF_COND_HEALING_DEBUFF ) && !( bitsDamageType & DMG_IGNORE_DEBUFFS ) )
 // 	{
@@ -10239,6 +10252,16 @@ void CTFPlayer::CommitSuicide( bool bExplode /* = false */, bool bForce /*= fals
 // Output : int
 //-----------------------------------------------------------------------------
 ConVar tf_preround_push_from_damage_enable( "tf_preround_push_from_damage_enable", "0", FCVAR_NONE, "If enabled, this will allow players using certain type of damage to move during pre-round freeze time." );
+//-----------------------------------------------------------------------------
+// OWTF2: as an inflictor (a melee hit's inflictor is the attacker), let an alternating melee
+// weapon push its sweep's victims in the direction of the swing instead of away from us.
+//-----------------------------------------------------------------------------
+void CTFPlayer::AdjustDamageDirection( const CTakeDamageInfo &info, Vector &dir, CBaseEntity *pEnt )
+{
+	BaseClass::AdjustDamageDirection( info, dir, pEnt );
+	AlternatingSwing_AdjustDamageDirection( info, dir );
+}
+
 void CTFPlayer::ApplyPushFromDamage( const CTakeDamageInfo &info, Vector vecDir )
 {
 	// check if player can be moved
@@ -10598,6 +10621,12 @@ int CTFPlayer::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 		int iOldHealth = m_iHealth;
 		m_iHealth -= ( realDamage + 0.5f );
 
+		// OWTF2: damage that lands wakes a player put to sleep by a Sleep Dart
+		if ( m_iHealth < iOldHealth )
+		{
+			CombatMed_OnDamageTaken( this );
+		}
+
 		if ( IsHeadshot( info.GetDamageCustom() ) && (m_iHealth <= 0) && (iOldHealth != 1) )
 		{
 			int iNoDeathFromHeadshots = 0;
@@ -10811,6 +10840,14 @@ int CTFPlayer::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 	if ( pTFAttacker && pTFAttacker != this )
 	{
 		pTFAttacker->RecordDamageEvent( info, (m_iHealth <= 0), iPrevHealth );
+	}
+
+	// OWTF2: ultimate charge from damage. Count health actually removed (no overkill);
+	// the part above max health only removed overheal.
+	{
+		const int iRemoved = iPrevHealth - MAX( 0, m_iHealth );
+		const int iOverheal = clamp( iPrevHealth - GetMaxHealth(), 0, iRemoved );
+		Ultimate_OnDamageDealt( info, this, iRemoved, iOverheal );
 	}
 
 	//No bleeding while invul or disguised.
@@ -20132,7 +20169,9 @@ bool CTFPlayer::WantsLagCompensationOnEntity( const CBasePlayer *pPlayer, const 
 			else
 			{
 				// Josh: Don't do any lag compensation on team-mates if we aren't a medic and not using melee.
-				if ( bIsMedic == false )
+				// OWTF2: ...or using a weapon whose shots hit teammates (tf_teammate_trace.h).
+				CTFWeaponBase *pActiveWeapon = GetActiveTFWeapon();
+				if ( bIsMedic == false && !( pActiveWeapon && pActiveWeapon->HitsTeammates() ) )
 					return false;
 			}
 		}

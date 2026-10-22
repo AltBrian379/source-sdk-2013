@@ -1,0 +1,254 @@
+// OWTF2: the mod's item definitions.
+//
+// Merged into TF2's scripts/items/items_game.txt when the item schema loads
+// (OWTF2_MergeModItemSchema, src/game/shared/tf/tf_owtf2_items.cpp). Same layout as
+// items_game.txt: each top-level section here is merged into the section of the same
+// name, and an entry with an existing key replaces it.
+//
+// Mod item definition indices start at 60000.
+"items_owtf2"
+{
+	"items"
+	{
+		// Veteran primary. PLACEHOLDER: SMG model, stats and icon.
+		// Self-contained (no prefab): TF2's SMG prefab would also make it usable by the Sniper.
+		"60000"
+		{
+			"name"						"OWTF2_WEAPON_VETERAN_RIFLE"
+			"item_class"				"tf_weapon_veteran_rifle"
+			"craft_class"				""
+			"item_type_name"			"#OWTF2_Weapon_VeteranRifle_Type"
+			"item_name"					"#OWTF2_Weapon_VeteranRifle"
+			"item_description"			"#OWTF2_Weapon_VeteranRifle_Desc"
+			"item_slot"					"primary"
+			"anim_slot"					"SECONDARY"	// Sniper body + SMG: use the Sniper's SMG animations
+			"item_quality"				"normal"
+			"baseitem"					"1"
+			"min_ilevel"				"1"
+			"max_ilevel"				"1"
+			"show_in_armory"			"0"
+			"image_inventory"			"backpack/weapons/w_models/w_smg"
+			"image_inventory_size_w"	"128"
+			"image_inventory_size_h"	"82"
+			"model_player"				"models/weapons/c_models/c_smg/c_smg.mdl"
+			"attach_to_hands"			"1"
+			"inspect_panel_dist"		"39"
+			"used_by_classes"
+			{
+				"veteran"	"1"
+			}
+			"tags"
+			{
+				"can_deal_damage"					"1"
+				"can_deal_critical_damage"			"1"
+				"can_deal_long_distance_damage"		"1"
+			}
+			"visuals"
+			{
+				"styles"
+				{
+					"0"
+					{
+						"skin_red"		"0"
+						"skin_blu"		"1"
+						"selectable"	"0"
+					}
+				}
+			}
+			"mouse_pressed_sound"		"ui/item_light_gun_pickup.wav"
+			"drop_sound"				"ui/item_light_gun_drop.wav"
+		}
+
+		// Veteran secondary: the healing field ability. PLACEHOLDER: Jarate model, animations and icon.
+		"60001"
+		{
+			"name"						"OWTF2_WEAPON_VETERAN_FIELD_RATIONS"
+			"item_class"				"tf_weapon_veteran_field_rations"
+			"craft_class"				""
+			"item_type_name"			"#OWTF2_Weapon_VeteranFieldRations_Type"
+			"item_name"					"#OWTF2_Weapon_VeteranFieldRations"
+			"item_description"			"#OWTF2_Weapon_VeteranFieldRations_Desc"
+			"item_slot"					"secondary"
+			"anim_slot"					"item1"	// Sniper body: the Jarate's animations
+			"item_quality"				"normal"
+			"baseitem"					"1"
+			"min_ilevel"				"1"
+			"max_ilevel"				"1"
+			"show_in_armory"			"0"
+			"image_inventory"			"backpack/weapons/c_models/urinejar"
+			"image_inventory_size_w"	"128"
+			"image_inventory_size_h"	"82"
+			"model_player"				"models/weapons/c_models/urinejar.mdl"
+			"attach_to_hands"			"1"
+			"inspect_panel_dist"		"22"
+			"used_by_classes"
+			{
+				"veteran"	"1"
+			}
+			"static_attrs"
+			{
+				"min_viewmodel_offset"	"10 0 -9"
+			}
+			"mouse_pressed_sound"		"ui/item_bottle_pickup.wav"
+			"drop_sound"				"ui/item_bottle_drop.wav"
+		}
+		// Combat Medic primary: the Biotic Rifle. PLACEHOLDER: Crusader's Crossbow model, animations and icon.
+		"60002"
+		{
+			"name"						"OWTF2_WEAPON_COMBATMED_RIFLE"
+			"item_class"				"tf_weapon_combatmed_rifle"
+			"craft_class"				""
+			"item_type_name"			"#OWTF2_Weapon_CombatMedRifle_Type"
+			"item_name"					"#OWTF2_Weapon_CombatMedRifle"
+			"item_description"			"#OWTF2_Weapon_CombatMedRifle_Desc"
+			"item_slot"					"primary"
+			"anim_slot"					"primary"	// Medic body: the Crusader's Crossbow's animations
+			"item_quality"				"normal"
+			"baseitem"					"1"
+			"min_ilevel"				"1"
+			"max_ilevel"				"1"
+			"show_in_armory"			"0"
+			"image_inventory"			"backpack/weapons/c_models/c_crusaders_crossbow/c_crusaders_crossbow"
+			"image_inventory_size_w"	"128"
+			"image_inventory_size_h"	"82"
+			"model_player"				"models/weapons/c_models/c_crusaders_crossbow/c_crusaders_crossbow.mdl"
+			"attach_to_hands"			"1"
+			"inspect_panel_dist"		"45"
+			"used_by_classes"
+			{
+				"combatmed"	"1"
+			}
+			"tags"
+			{
+				"can_deal_damage"					"1"
+				"can_deal_long_distance_damage"		"1"
+			}
+			"visuals"
+			{
+				"styles"
+				{
+					"0"
+					{
+						"skin_red"		"0"
+						"skin_blu"		"1"
+						"selectable"	"0"
+					}
+				}
+			}
+			"mouse_pressed_sound"		"ui/item_light_gun_pickup.wav"
+			"drop_sound"				"ui/item_light_gun_drop.wav"
+		}
+		// Combat Medic secondary: the Biotic Grenade ability. PLACEHOLDER: Jarate model and icon.
+		"60003"
+		{
+			"name"						"OWTF2_WEAPON_COMBATMED_GRENADE"
+			"item_class"				"tf_weapon_combatmed_grenade"
+			"craft_class"				""
+			"item_type_name"			"#OWTF2_Weapon_CombatMedGrenade_Type"
+			"item_name"					"#OWTF2_Weapon_CombatMedGrenade"
+			"item_description"			"#OWTF2_Weapon_CombatMedGrenade_Desc"
+			"item_slot"					"secondary"
+			"anim_slot"					"secondary"	// Medic body: the Medigun's pose; the viewmodel plays Medic's throw (ACT_THROWABLE_VM_FIRE)
+			"item_quality"				"normal"
+			"baseitem"					"1"
+			"min_ilevel"				"1"
+			"max_ilevel"				"1"
+			"show_in_armory"			"0"
+			"image_inventory"			"backpack/weapons/c_models/urinejar"
+			"image_inventory_size_w"	"128"
+			"image_inventory_size_h"	"82"
+			"model_player"				"models/weapons/c_models/urinejar.mdl"
+			"attach_to_hands"			"1"
+			"inspect_panel_dist"		"22"
+			"used_by_classes"
+			{
+				"combatmed"	"1"
+			}
+			"mouse_pressed_sound"		"ui/item_bottle_pickup.wav"
+			"drop_sound"				"ui/item_bottle_drop.wav"
+		}
+		// Combat Medic melee slot: the Sleep Dart ability. PLACEHOLDER: Crusader's Crossbow model, animations and icon.
+		"60004"
+		{
+			"name"						"OWTF2_WEAPON_COMBATMED_SLEEPDART"
+			"item_class"				"tf_weapon_combatmed_sleepdart"
+			"craft_class"				""
+			"item_type_name"			"#OWTF2_Weapon_CombatMedSleepDart_Type"
+			"item_name"					"#OWTF2_Weapon_CombatMedSleepDart"
+			"item_description"			"#OWTF2_Weapon_CombatMedSleepDart_Desc"
+			"item_slot"					"melee"
+			"anim_slot"					"primary"	// Medic body and arms: the Crusader's Crossbow's animations
+			"item_quality"				"normal"
+			"baseitem"					"1"
+			"min_ilevel"				"1"
+			"max_ilevel"				"1"
+			"show_in_armory"			"0"
+			"image_inventory"			"backpack/weapons/c_models/c_crusaders_crossbow/c_crusaders_crossbow"
+			"image_inventory_size_w"	"128"
+			"image_inventory_size_h"	"82"
+			"model_player"				"models/weapons/c_models/c_crusaders_crossbow/c_crusaders_crossbow.mdl"
+			"attach_to_hands"			"1"
+			"inspect_panel_dist"		"45"
+			"used_by_classes"
+			{
+				"combatmed"	"1"
+			}
+			"mouse_pressed_sound"		"ui/item_light_gun_pickup.wav"
+			"drop_sound"				"ui/item_light_gun_drop.wav"
+		}
+		// Crusader primary: the hammer, a melee weapon on key 1. PLACEHOLDER: the Eyelander's model, sounds and icon.
+		// Swings alternate left and right (tf_weapon_alternating_melee); anim_slot item1 = the two-handed sword pose.
+		"60005"
+		{
+			"name"						"OWTF2_WEAPON_CRUSADER_HAMMER"
+			"item_class"				"tf_weapon_crusader_hammer"
+			"craft_class"				""
+			"item_type_name"			"#OWTF2_Weapon_CrusaderHammer_Type"
+			"item_name"					"#OWTF2_Weapon_CrusaderHammer"
+			"item_description"			"#OWTF2_Weapon_CrusaderHammer_Desc"
+			"item_slot"					"primary"
+			"anim_slot"					"item1"	// Demoman body: the swords' two-handed pose (and overhead strike, for Fire Strike)
+			"item_quality"				"normal"
+			"baseitem"					"1"
+			"min_ilevel"				"1"
+			"max_ilevel"				"1"
+			"show_in_armory"			"0"
+			"image_inventory"			"backpack/weapons/c_models/c_claymore/c_claymore"
+			"image_inventory_size_w"	"128"
+			"image_inventory_size_h"	"82"
+			"model_player"				"models/weapons/c_models/c_claymore/c_claymore.mdl"
+			"attach_to_hands"			"1"
+			"used_by_classes"
+			{
+				"crusader"	"1"
+			}
+			"static_attrs"
+			{
+				"min_viewmodel_offset"	"12 -3 -10"	// the Eyelander's
+			}
+			"tags"
+			{
+				"can_deal_damage"			"1"
+				"can_deal_critical_damage"	"1"
+			}
+			"visuals"
+			{
+				"sound_melee_miss"		"Weapon_Sword.Swing"
+				"sound_melee_hit"		"Weapon_Sword.HitFlesh"
+				"sound_melee_hit_world"	"Weapon_Sword.HitWorld"
+				"sound_burst"			"Weapon_Sword.SwingCrit"
+				"styles"
+				{
+					"0"
+					{
+						"skin_red"		"0"
+						"skin_blu"		"1"
+						"selectable"	"0"
+					}
+				}
+			}
+			"mouse_pressed_sound"		"ui/item_knife_large_pickup.wav"
+			"drop_sound"				"ui/item_metal_weapon_drop.wav"
+		}
+	}
+}

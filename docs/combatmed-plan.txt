@@ -1,0 +1,142 @@
+OWTF2 - Combat Medic (Ana-like support hero): plan
+===================================================
+
+Gameplay of Overwatch's Ana, recreated with an original name. Nothing from Blizzard
+(names, models, sounds, art) goes into the mod.
+
+Naming
+------
+- Display name: "Combat Medic".
+- Code: TF_CLASS_COMBATMED (11, after Veteran; Civilian moves to 12, Random to 14).
+  Raw name "combatmed", class script scripts/playerclasses/combatmed.txt.
+- Functions CombatMed_*, classes CTFCombatMed*, convars tf_combatmed_* (FCVAR_REPLICATED |
+  FCVAR_NOTIFY). Every tunable number is a convar.
+
+Placeholders
+------------
+- Medic model and hitboxes.
+- Base speed 280 (the Demoman's), like every ported hero.
+- Max health 175, like the Veteran: Ana has Soldier: 76's 250 HP.
+- Damage and healing: Ana's current values x 0.7 (175 / 250), the rule in CLAUDE.md
+  ("Stat scaling for ported heroes"). TF2's modifiers (distance, crits, resistances) apply on
+  top by default. Exception, set by the user: the Biotic Rifle is flat, no distance modifier on
+  its damage or its healing (no close-range bonus, no falloff, no crossbow travel-time heal bonus).
+  Ana's rifle has no falloff, and neither do TF2's sniper rifles.
+- Ana's numbers (rifle damage and heal, fire rate, clip, cooldowns, durations, radii) must be
+  checked against the live game before each phase. OW2 changed several of them.
+
+Loadout and keys
+----------------
+  Slot 1  Biotic Rifle    +attack fires, +attack2 scopes.
+  Slot 2  Biotic Grenade  key 2. Instant switch, throw animation, grenade leaves after a short
+                          delay, then back to the rifle.
+  Slot 3  Sleep Dart      +attack4 (SHIFT) or key 3. Switch, cast, fire, back to the rifle.
+  -       Nano Boost      +attack5 (Q), the ultimate system.
+
+Grenade and Dart block firing like a cast, so they're weapons the player switches to and
+from (like the Veteran's Field Rations), not abilities fired from the rifle.
+- Neither interrupts the other ability. Using the Dart right after the Grenade still returns
+  to the rifle. Every cast returns to the rifle.
+- Using either while scoped unscopes, and the scope does not come back.
+
+Shared cast-weapon base
+-----------------------
+The Field Rations already do switch in -> cast -> effect -> cooldown -> switch back. Move that
+into a base class (CTFCastAbilityWeapon) with settings for cast time, cooldown, instant deploy
+and the animation to play. Then put the Field Rations, Grenade and Dart on it, so switch
+blocking and the return to the rifle live in one place. The switch triggered by +attack4 must
+be predicted (done from shared code, like the Field Rations' switch back).
+
+Biotic Rifle
+------------
+- Built on CTFSniperRifle for zoom, scope overlay and FOV; no charge, no headshots.
+- Unscoped: a projectile with the SYRINGE GUN's model (the crossbow bolt is too big and
+  distracting). It's a new networked projectile. TF2's own syringes are partly client-side.
+  It borrows the crossbow bolt's (CTFProjectile_HealingBolt) teammate-healing logic.
+- Scoped: hitscan with a trace filter that includes teammates. Lag compensation must also
+  rewind teammates for this weapon (CTFPlayer::WantsLagCompensationOnEntity; see whether the
+  Medigun already has an exception there).
+- Teammates: hits HURT teammates (health below max) and heals them. FULL-HEALTH teammates are
+  ignored: the shot passes through them. This applies to both modes.
+- Enemies: damage over a short time, with a small damage-over-time tracker on the victim
+  (TF2's bleed has fixed ticks and doesn't fit).
+- Healing credits ultimate charge through CTFGameStats::Event_PlayerHealedOther, after the
+  heal modifier (blocked healing gives no charge).
+
+Sleep Dart (slot 3)
+-------------------
+- Projectile with the CROSSBOW BOLT's model. Ignores teammates entirely (passes through).
+- On an enemy hit: StunPlayer( TF_STUN_BOTH ) for the sleep duration, plus a sleep end time
+  in CTFPlayerShared. Placeholder visuals: TF2's stun (stars, stun animation).
+- Übercharge blocks it, like any bullet.
+- Any damage wakes the target, damage over time included. TF2 applies the stun immediately,
+  so there's no window between the hit and the sleep, and no exception is needed.
+- It cancels an ultimate that's mid-cast, for ANY hero: a generic hook in tf_ultimate.cpp.
+  The canceled ultimate's charge is lost.
+
+Biotic Grenade (slot 2)
+-----------------------
+- Instant switch (no draw time), plays the throw animation; the grenade leaves after a short
+  delay. Thrown like the Jarate (CTFProjectile_Jar, tf_weapon_jar.cpp). Explodes on impact.
+- Allies in the area: heal, plus a heal-boost window.
+- Enemies in the area: damage, plus a no-heal window.
+- Tints: no-heal tints the player PURPLE, heal boost tints the player GREEN. Both are subtle,
+  5-10%. Done like Jarate's yellow: the YellowLevel material proxy (CProxyUrineLevel,
+  client/tf/c_tf_player.cpp), which player materials already use, gets a case for each state.
+  Weapons and cosmetics whose materials use the proxy are tinted too.
+
+Heal modifier (new logic; TF2 has no heal boost or full heal block)
+-------------------------------------------------------------------
+One // OWTF2: step that all incoming healing passes through, reading two networked end
+times on the player (no-heal, heal boost) and a boost multiplier:
+- CTFPlayer::TakeHealth: health packs, bolts, our projectiles.
+- The healer-list tick in CTFPlayerShared (tf_player_shared.cpp, where TF2 already applies the
+  afterburn heal reduction): Medigun, dispenser, the Veteran's healing field.
+No-heal also blocks Nano Boost's burst heal. HUD icons for both states come later
+(may need new assets).
+Self-healing rules: no out-of-combat regeneration exists or is planned, so no special rule.
+
+Nano Boost (ultimate)
+---------------------
+- Uses the existing ultimate system. CombatMed_CanUseUltimate requires a living ally under the
+  crosshair (cone and line of sight, adapted from the Veteran's FindAutoAimTarget). The drain
+  time is 0 (instant), and the effect runs on the ally for its duration.
+- On the ally:
+  - burst heal (blocked by no-heal);
+  - TF_COND_ENERGY_BUFF (Crit-a-Cola's minicrits and its visual and audio cues);
+  - TF_COND_DEFENSEBUFF_NO_CRIT_BLOCK (the Battalion's Backup resistance and its pulsing ring,
+    without the crit immunity). Check it shows the ring.
+- The Combat Medic is set as the conditions' provider, for assists.
+- Resistance made modular: a per-application resistance value stored on the player
+  (server-only, no DEFINE_PRED_FIELD), used by ApplyOnDamageModifyRules instead of the
+  hard-coded 0.65. Stock sources leave it unset: 35%, and 50% against sentries, as before.
+  Nano sets it from tf_combatmed_nano_resistance (default 0.35).
+- Accepted differences from Overwatch: minicrits are +35% (not +50%) and remove the falloff
+  penalty.
+
+HUD
+---
+- Cooldown meters (Grenade, Dart) go in the row above the ultimate meter
+  (CItemEffectMeterManager::PositionAboveUltimateMeter; done for the Veteran's HELIX/FIELD).
+- Scope overlay (Sniper's), ultimate meter (existing), no-heal and heal-boost icons later.
+
+Phases
+------
+0. DONE. Class skeleton: enum, tables (follow docs/veteran-class-changes.txt and the
+   COMPILE_TIME_ASSERTs; grep TF_CLASS_ENGINEER, TF_CLASS_COUNT, TF_LAST_NORMAL_CLASS),
+   LOADOUT_COUNT, combatmed.txt, class menu, three loadout slots, GetStockContentClassIndex.
+1. Shared systems: the cast-weapon base (Field Rations moved onto it), teammate trace and lag
+   compensation, damage-over-time tracker, heal modifier, modular defense-buff resistance,
+   the generic "cancel ultimate cast" hook. DONE (see CLAUDE.md, "Shared hero systems").
+2. Biotic Rifle. DONE (see CLAUDE.md).
+3. Biotic Grenade (heal boost, no-heal, tints). DONE (see CLAUDE.md). Tints are about 20%
+   (set by the user after seeing 5-10%).
+4. Sleep Dart. DONE (see CLAUDE.md). Not ported: the shorter sleep on tanks (TF2 has none) and the
+   0.5 s wake-up recovery.
+5. Nano Boost. DONE (see CLAUDE.md). The Heavy's Buffalo Steak speed from the energy buff is
+   skipped while Nano-boosted (set by the user).
+6. Details: HUD icons, model, sounds, art, class-menu assets.
+
+Testing: the VScript harness (CLAUDE.md). Healing tests need a teammate that stands still,
+e.g. a puppet bot (`bot -team red -class heavyweapons`). Print health before and after each
+hit to check heal, damage over time, no-heal, heal boost and Nano numbers.

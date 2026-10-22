@@ -64,6 +64,12 @@ struct TFPlayerClassData_t
 	bool		m_bParsed;
 	Vector		m_vecThirdPersonOffset;
 
+	// OWTF2: ultimate (tf_ultimate.h). Cost 0 = no ultimate; duration 0 = spent instantly;
+	// cast time: seconds between pressing the key and the effect starting (0 = immediate).
+	float		m_flUltimateCost;
+	float		m_flUltimateDuration;
+	float		m_flUltimateCastTime;
+
 #ifdef GAME_DLL
 	// sounds
 	char		m_szDeathSound[ DEATH_SOUND_TOTAL ][MAX_PLAYERCLASS_SOUND_LENGTH];

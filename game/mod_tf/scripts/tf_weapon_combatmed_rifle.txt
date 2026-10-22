@@ -1,0 +1,97 @@
+// OWTF2: Combat Medic primary weapon, the Biotic Rifle (tf_weapon_combatmed_rifle).
+// PLACEHOLDER: the Crusader's Crossbow's model and animations, the Sydney Sleeper's fire sound,
+// the Syringe Gun's reload and empty sounds.
+// Damage, healing, projectile speed and scope are convars (tf_combatmed_rifle_*), not this file.
+// Initial defaults from Ana: 15-round clip, 1.25 shots/s (0.8 s), 1.5 s reload (reserve 45: AmmoMax in combatmed.txt).
+WeaponData
+{
+	// Attributes Base.
+	"printname"		"#OWTF2_Weapon_CombatMedRifle"
+	"BuiltRightHanded"	"0"
+	"weight"		"2"
+	"WeaponType"		"primary"
+	"ITEM_FLAG_NOITEMPICKUP" 	"1"
+	"HasTeamSkins_Viewmodel"			"1"
+
+	// Attributes TF.
+	"Damage"		"52"	// unused: CTFCombatMedRifle uses tf_combatmed_rifle_damage
+	"Range"			"8192"
+	"BulletsPerShot"	"1"
+	"Spread"		"0"
+	"TimeIdle"		"10.0"
+	"TimeIdleEmpty"		"1.0"
+	"TimeFireDelay"		"0.8"	// Ana: 1.25 shots/s
+	"TimeReload"		"1.5"	// Ana: 1.5 s; used by CTFCombatMedRifle::DefaultReload instead of the animation length
+	"ProjectileType"	"projectile_syringe"	// CTFCombatMedRifle::FireProjectile fires its own projectile or hitscan shot
+	"UseRapidFireCrits"	"0"
+
+	// Ammo & Clip.
+	"primary_ammo"		"TF_AMMO_PRIMARY"
+	"secondary_ammo"	"None"
+	clip_size		15
+	default_clip		15
+
+	// Buckets.
+	"bucket"		"0"
+	"bucket_position"	"0"
+
+	// Animation.
+	"viewmodel"			"models/weapons/c_models/c_crusaders_crossbow/c_crusaders_crossbow.mdl"
+	"playermodel"		"models/weapons/c_models/c_crusaders_crossbow/c_crusaders_crossbow.mdl"
+	"anim_prefix"	"crossbow"
+
+	// Sounds.
+	// Max of 16 per category (ie. max 16 "single_shot" sounds).
+	SoundData
+	{
+		"reload"		"Weapon_SyringeGun.WorldReload"
+		"empty"			"Weapon_SyringeGun.ClipEmpty"
+		"single_shot"		"Weapon_SydneySleeper.Single"
+		"burst"			"Weapon_SydneySleeper.SingleCrit"
+	}
+
+	// Weapon Sprite data is loaded by the Client DLL.
+	TextureData
+	{
+		"weapon"
+		{
+				"file"		"sprites/bucket_syrgun_red"
+				"x"		"0"
+				"y"		"0"
+				"width"		"200"
+				"height"		"128"
+		}
+		"weapon_s"
+		{
+				"file"		"sprites/bucket_syrgun_red"
+				"x"		"0"
+				"y"		"0"
+				"width"		"200"
+				"height"		"128"
+		}
+		"ammo"
+		{
+				"file"		"sprites/a_icons1"
+				"x"			"55"
+				"y"			"60"
+				"width"		"73"
+				"height"	"15"
+		}
+		"crosshair"
+		{
+				"file"		"sprites/crosshairs"
+				"x"			"0"
+				"y"			"0"
+				"width"		"32"
+				"height"	"32"
+		}
+		"autoaim"
+		{
+				"file"		"sprites/crosshairs"
+				"x"			"0"
+				"y"			"48"
+				"width"		"24"
+				"height"	"24"
+		}
+	}
+}

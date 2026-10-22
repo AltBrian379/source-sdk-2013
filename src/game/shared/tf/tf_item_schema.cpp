@@ -511,7 +511,9 @@ static void InitPerClassStringArray( KeyValues *pPerClassData, const char *(&out
 				pszOut = new char[ nLength ];
 				V_strncpy( pszOut, strClassString, nLength );
 			}
-			else if ( pszBaseName )
+			// OWTF2: only expand basenames for the stock classes. Stock content has no "*_veteran" files,
+			// so expanding it for new classes just makes the item precache fail to load missing models.
+			else if ( pszBaseName && i <= TF_CLASS_ENGINEER )
 			{
 				// If we have a basename specified, use that to construct our class-specific string
 				// ( ex. models/badge_%s.mdl turns into models/badge_scout.mdl, etc. )
@@ -1363,7 +1365,8 @@ void CTFItemDefinition::FilloutSlotUsage( CBitVec<LOADOUT_COUNT> *pBV ) const
 bool CTFItemDefinition::CanBeUsedByAllClasses( void ) const
 {
 	// Right now, Civilian isn't a real class, so we only have 9 classes in this check
-	for ( int iClass = 1; iClass < (LOADOUT_COUNT-1); iClass++ )
+	// OWTF2: was "< (LOADOUT_COUNT-1)". Keep it to the 9 stock classes: no stock item lists the mod's classes.
+	for ( int iClass = 1; iClass <= TF_CLASS_ENGINEER; iClass++ )
 	{
 		if ( !CanBeUsedByClass(iClass) )
 			return false;
@@ -1465,8 +1468,15 @@ static PlayerClassInfo_t gs_PlayerClassData[] =
 	{ "Pyro",		"#TF_Class_Name_Pyro" },
 	{ "Spy",		"#TF_Class_Name_Spy" },
 	{ "Engineer",	"#TF_Class_Name_Engineer" },
+	{ "Veteran",	"#TF_Class_Name_Veteran" },	// OWTF2: new class
+	{ "CombatMed",	"#TF_Class_Name_CombatMed" },	// OWTF2: new class
+	{ "Crusader",	"#TF_Class_Name_Crusader" },	// OWTF2: new class
 	{ "Invalid",	"" }						// lots of code loops over these classes based on LOADOUT_COUNT, which is wrong, but this allows them to do it safely
 };
+
+// OWTF2: keep the class tables and LOADOUT_COUNT in step with the class enum
+COMPILE_TIME_ASSERT( ARRAYSIZE( gs_PlayerClassData ) == LOADOUT_COUNT );
+COMPILE_TIME_ASSERT( LOADOUT_COUNT == TF_CLASS_COUNT_ALL );
 
 bool BIsPlayerClassValid( int iClass )
 {

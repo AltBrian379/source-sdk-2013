@@ -29,6 +29,7 @@
 #include "c_tf_player.h"
 #include "ihudlcd.h"
 #include "tf_hud_ammostatus.h"
+#include "tf_hud_itemeffectmeter.h"	// OWTF2: stack above the cooldown meters
 #include "tf_gamerules.h"
 #include "tf_logic_halloween_2014.h"
 
@@ -69,7 +70,51 @@ CTFHudWeaponAmmo::CTFHudWeaponAmmo( const char *pElementName ) : CHudElement( pE
 	m_hCurrentActiveWeapon = NULL;
 	m_flNextThink = 0.0f;
 
+	m_nLayoutXPos = 0;	// OWTF2
+	m_nLayoutYPos = 0;	// OWTF2
+
 	RegisterForRenderGroup( "inspect_panel" );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: OWTF2: remember where hudlayout.res puts us
+//-----------------------------------------------------------------------------
+void CTFHudWeaponAmmo::ApplySettings( KeyValues *inResourceData )
+{
+	BaseClass::ApplySettings( inResourceData );
+	GetPos( m_nLayoutXPos, m_nLayoutYPos );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: OWTF2: while the ultimate meter (tf_hud_ultimate.cpp) is showing, it takes
+//          this corner, so sit directly on top of it; otherwise use the layout position.
+//-----------------------------------------------------------------------------
+void CTFHudWeaponAmmo::UpdatePositionForUltimateMeter( void )
+{
+	int nX = m_nLayoutXPos;
+	int nY = m_nLayoutYPos;
+
+	Panel *pUltimate = dynamic_cast< Panel * >( gHUD.FindElement( "CHudUltimateMeter" ) );
+	if ( pUltimate && pUltimate->IsVisible() )
+	{
+		int nUltX, nUltY;
+		pUltimate->GetPos( nUltX, nUltY );
+		nY = MIN( nY, nUltY - GetTall() );
+
+		// The item effect meters (cooldowns) sit on top of the ultimate meter; go above them.
+		int nMetersTop;
+		if ( g_ItemEffectMeterManager.GetRowTopAboveUltimateMeter( nMetersTop ) )
+		{
+			nY = MIN( nY, nMetersTop - GetTall() );
+		}
+	}
+
+	int nCurX, nCurY;
+	GetPos( nCurX, nCurY );
+	if ( nCurX != nX || nCurY != nY )
+	{
+		SetPos( nX, nY );
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -247,6 +292,8 @@ void CTFHudWeaponAmmo::HideLowAmmoIndicator( void )
 //-----------------------------------------------------------------------------
 void CTFHudWeaponAmmo::OnThink()
 {
+	UpdatePositionForUltimateMeter();	// OWTF2
+
 	// Get the player and active weapon.
 	C_BasePlayer *pPlayer = C_BasePlayer::GetLocalPlayer();
 	C_BaseCombatWeapon *pWeapon = GetActiveWeapon();

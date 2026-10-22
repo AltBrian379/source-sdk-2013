@@ -89,6 +89,8 @@
 	#include "tf_weapon_grenade_pipebomb.h"
 	#include "tf_weapon_flaregun.h"
 	#include "tf_weapon_sniperrifle.h"
+#include "tf_weapon_veteran_rifle.h"	// OWTF2
+#include "tf_ultimate.h"	// OWTF2
 	#include "tf_weapon_knife.h"
 	#include "tf_weapon_jar.h"
 	#include "halloween/tf_weapon_spellbook.h"
@@ -173,6 +175,9 @@ static int g_TauntCamRagdollAchievements[] =
 	0,		// TF_CLASS_PYRO,
 	ACHIEVEMENT_TF_SPY_FREEZECAM_FLICK,		// TF_CLASS_SPY,
 	0,		// TF_CLASS_ENGINEER,
+	0,		// TF_CLASS_VETERAN, OWTF2: new class
+	0,		// TF_CLASS_COMBATMED, OWTF2: new class
+	0,		// TF_CLASS_CRUSADER, OWTF2: new class
 
 	0,		// TF_CLASS_CIVILIAN,
 	0,		// TF_CLASS_COUNT_ALL,
@@ -191,6 +196,9 @@ static int g_TauntCamAchievements[] =
 	ACHIEVEMENT_TF_PYRO_FREEZECAM_TAUNTS,		// TF_CLASS_PYRO,
 	0,		// TF_CLASS_SPY,
 	ACHIEVEMENT_TF_ENGINEER_FREEZECAM_TAUNT,	// TF_CLASS_ENGINEER,
+	0,		// TF_CLASS_VETERAN, OWTF2: new class
+	0,		// TF_CLASS_COMBATMED, OWTF2: new class
+	0,		// TF_CLASS_CRUSADER, OWTF2: new class
 	0,		// TF_CLASS_CIVILIAN,
 	0,		// TF_CLASS_COUNT_ALL,
 };
@@ -209,6 +217,9 @@ static int g_TauntCamAchievements2[] =
 	0,		// TF_CLASS_PYRO,
 	0,		// TF_CLASS_SPY,
 	0,		// TF_CLASS_ENGINEER,
+	0,		// TF_CLASS_VETERAN, OWTF2: new class
+	0,		// TF_CLASS_COMBATMED, OWTF2: new class
+	0,		// TF_CLASS_CRUSADER, OWTF2: new class
 
 	0,		// TF_CLASS_CIVILIAN,
 	0,		// TF_CLASS_COUNT_ALL,
@@ -819,6 +830,9 @@ ConVar tf_tournament_classlimit_heavy( "tf_tournament_classlimit_heavy", "-1", F
 ConVar tf_tournament_classlimit_pyro( "tf_tournament_classlimit_pyro", "-1", FCVAR_REPLICATED, "Tournament mode per-team class limit for Pyros.\n" );
 ConVar tf_tournament_classlimit_spy( "tf_tournament_classlimit_spy", "-1", FCVAR_REPLICATED, "Tournament mode per-team class limit for Spies.\n" );
 ConVar tf_tournament_classlimit_engineer( "tf_tournament_classlimit_engineer", "-1", FCVAR_REPLICATED, "Tournament mode per-team class limit for Engineers.\n" );
+ConVar tf_tournament_classlimit_veteran( "tf_tournament_classlimit_veteran", "-1", FCVAR_REPLICATED, "Tournament mode per-team class limit for Veterans.\n" );	// OWTF2: new class
+ConVar tf_tournament_classlimit_combatmed( "tf_tournament_classlimit_combatmed", "-1", FCVAR_REPLICATED, "Tournament mode per-team class limit for Combat Medics.\n" );	// OWTF2: new class
+ConVar tf_tournament_classlimit_crusader( "tf_tournament_classlimit_crusader", "-1", FCVAR_REPLICATED, "Tournament mode per-team class limit for Crusaders.\n" );	// OWTF2: new class
 ConVar tf_tournament_classchange_allowed( "tf_tournament_classchange_allowed", "1", FCVAR_REPLICATED, "Allow players to change class while the game is active?.\n" );
 ConVar tf_tournament_classchange_ready_allowed( "tf_tournament_classchange_ready_allowed", "1", FCVAR_REPLICATED, "Allow players to change class after they are READY?.\n" );
 
@@ -1355,7 +1369,7 @@ static CViewVectors g_TFViewVectors(
 	Vector( 0, 0, 14 )		//VEC_DEAD_VIEWHEIGHT (m_vDeadViewHeight) dead view height
 );							
 
-Vector g_TFClassViewVectors[11] =
+Vector g_TFClassViewVectors[TF_CLASS_COUNT_ALL] =	// OWTF2: was [11]
 {
 	Vector( 0, 0, 72 ),		// TF_CLASS_UNDEFINED
 
@@ -1368,9 +1382,13 @@ Vector g_TFClassViewVectors[11] =
 	Vector( 0, 0, 68 ),		// TF_CLASS_PYRO,
 	Vector( 0, 0, 75 ),		// TF_CLASS_SPY,
 	Vector( 0, 0, 68 ),		// TF_CLASS_ENGINEER,
+	Vector( 0, 0, 75 ),		// TF_CLASS_VETERAN, OWTF2: matches the Sniper model it uses
+	Vector( 0, 0, 75 ),		// TF_CLASS_COMBATMED, OWTF2: matches the Medic model it uses
+	Vector( 0, 0, 68 ),		// TF_CLASS_CRUSADER, OWTF2: matches the Demoman model it uses
 
 	Vector( 0, 0, 65 ),		// TF_CLASS_CIVILIAN,		// TF_LAST_NORMAL_CLASS
 };
+COMPILE_TIME_ASSERT( ARRAYSIZE( g_TFClassViewVectors ) == TF_CLASS_COUNT_ALL );	// OWTF2
 
 const CViewVectors *CTFGameRules::GetViewVectors() const
 {
@@ -6286,6 +6304,17 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 					}
 				}
 			}
+			// OWTF2: Veteran rifle headshots minicrit. The head hit is registered like the Ambassador's,
+			// from the bullet's hitbox (CTFPlayer::TraceAttack stores it with SetLastHitGroup), but it
+			// minicrits instead of crits. Hitscan bullets only (the player is the inflictor): helix rockets
+			// also report the rifle as their weapon.
+			else if ( pVictim && pTFAttacker && pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_VETERAN_RIFLE &&
+					  info.GetInflictor() == pTFAttacker && pVictim->LastHitGroup() == HITGROUP_HEAD )
+			{
+				bAllSeeCrit = true;
+				info.SetCritType( CTakeDamageInfo::CRIT_MINI );
+				eBonusEffect = kBonusEffect_MiniCrit;
+			}
 			else
 			{
 				// Allow Attributes to shortcut out if found, no need to check all of them
@@ -6541,7 +6570,13 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 			{
 				// defense buffs gives 50% to sentry dmg and 35% from all other sources
 				CObjectSentrygun *pSentry = ( info.GetInflictor() && info.GetInflictor()->IsBaseObject() ) ? dynamic_cast< CObjectSentrygun* >( info.GetInflictor() ) : NULL;
-				if ( pSentry )
+				const float flResistance = pVictim->m_Shared.GetDefenseBuffResistance();
+				if ( flResistance >= 0.0f )
+				{
+					// OWTF2: whoever applied the buff set its resistance (Nano Boost), against every source
+					flDamage *= 1.0f - MIN( flResistance, 1.0f );
+				}
+				else if ( pSentry )
 				{
 					flDamage *= 0.50f;
 				}
@@ -6606,6 +6641,18 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 			float flDistance = MAX( 1.0, ( pVictimBaseEntity->WorldSpaceCenter() - vAttackerPos).Length() );
 				
 			float flCenter = RemapValClamped( flDistance / flOptimalDistance, 0.0, 2.0, 1.0, 0.0 );
+			// OWTF2: the Veteran rifle's bullets have their own falloff range (helix rockets keep TF2's).
+			if ( pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_VETERAN_RIFLE && info.GetInflictor() == pAttacker )
+			{
+				flCenter = CTFVeteranRifle::GetDistanceModCenter( flDistance );
+
+				// OWTF2: during the Veteran's ultimate the rifle has no falloff (the close-range bonus stays).
+				CTFPlayer *pVeteran = ToTFPlayer( pAttacker );
+				if ( pVeteran && Ultimate_IsEffectActive( pVeteran ) )
+				{
+					flCenter = MAX( flCenter, 0.5f );
+				}
+			}
 			if ( ( flCenter > 0.5 && bDoShortRangeDistanceIncrease ) || flCenter <= 0.5 )
 			{
 				if ( bitsDamage & DMG_NOCLOSEDISTANCEMOD )
@@ -11312,7 +11359,8 @@ static kill_eater_event_t g_eClassKillEvents[] =
 	kKillEaterEvent_SpyKill,					// TF_CLASS_SPY
 	kKillEaterEvent_EngineerKill,				// TF_CLASS_ENGINEER
 };
-COMPILE_TIME_ASSERT( ARRAYSIZE( g_eClassKillEvents ) == (TF_LAST_NORMAL_CLASS - TF_FIRST_NORMAL_CLASS) );
+// OWTF2: kill eater events exist only for the 9 stock classes, so new classes have no row.
+COMPILE_TIME_ASSERT( ARRAYSIZE( g_eClassKillEvents ) == (TF_CLASS_ENGINEER - TF_FIRST_NORMAL_CLASS + 1) );
 
 //-----------------------------------------------------------------------------
 static kill_eater_event_t g_eRobotClassKillEvents[] =
@@ -11327,7 +11375,8 @@ static kill_eater_event_t g_eRobotClassKillEvents[] =
 	kKillEaterEvent_RobotSpyKill,					// TF_CLASS_SPY
 	kKillEaterEvent_RobotEngineerKill,				// TF_CLASS_ENGINEER
 };
-COMPILE_TIME_ASSERT( ARRAYSIZE( g_eRobotClassKillEvents ) == (TF_LAST_NORMAL_CLASS - TF_FIRST_NORMAL_CLASS) );
+// OWTF2: kill eater events exist only for the 9 stock classes, so new classes have no row.
+COMPILE_TIME_ASSERT( ARRAYSIZE( g_eRobotClassKillEvents ) == (TF_CLASS_ENGINEER - TF_FIRST_NORMAL_CLASS + 1) );
 
 static bool BHasWearableOfSpecificQualityEquipped( /*const*/ CTFPlayer *pTFPlayer, EEconItemQuality eQuality )
 {
@@ -11690,7 +11739,8 @@ void CTFGameRules::PlayerKilled( CBasePlayer *pVictim, const CTakeDamageInfo &in
 
 				// Optional: also track "killed X players of this specific class".
 				int iVictimClassIndex = pTFPlayerVictim->GetPlayerClass()->GetClassIndex();
-				if ( iVictimClassIndex >= TF_FIRST_NORMAL_CLASS && iVictimClassIndex <= TF_LAST_NORMAL_CLASS )
+				// OWTF2: was "<= TF_LAST_NORMAL_CLASS"; bound by the table so classes without a kill eater row are skipped
+				if ( iVictimClassIndex >= TF_FIRST_NORMAL_CLASS && iVictimClassIndex - TF_FIRST_NORMAL_CLASS < (int)ARRAYSIZE( g_eClassKillEvents ) )
 				{
 					const kill_eater_event_t eClassKillType = g_eClassKillEvents[ iVictimClassIndex - TF_FIRST_NORMAL_CLASS ];
 					EconEntity_OnOwnerKillEaterEvent( pAttackerEconWeapon, pTFPlayerScorer, pTFPlayerVictim, eClassKillType );
@@ -11859,7 +11909,8 @@ void CTFGameRules::PlayerKilled( CBasePlayer *pVictim, const CTakeDamageInfo &in
 
 				// Optional: also track "killed X Robots of this specific class".
 				int iVictimClassIndex = pTFPlayerVictim->GetPlayerClass()->GetClassIndex();
-				if ( iVictimClassIndex >= TF_FIRST_NORMAL_CLASS && iVictimClassIndex <= TF_LAST_NORMAL_CLASS )
+				// OWTF2: was "<= TF_LAST_NORMAL_CLASS"; bound by the table so classes without a kill eater row are skipped
+				if ( iVictimClassIndex >= TF_FIRST_NORMAL_CLASS && iVictimClassIndex - TF_FIRST_NORMAL_CLASS < (int)ARRAYSIZE( g_eRobotClassKillEvents ) )
 				{
 					const kill_eater_event_t eClassKillType = g_eRobotClassKillEvents[ iVictimClassIndex - TF_FIRST_NORMAL_CLASS ];
 					EconEntity_OnOwnerKillEaterEvent( pAttackerEconWeapon, pTFPlayerScorer, pTFPlayerVictim, eClassKillType );
@@ -17671,6 +17722,9 @@ int CTFGameRules::GetClassLimit( int iClass )
 		case TF_CLASS_PYRO: return tf_tournament_classlimit_pyro.GetInt(); break;
 		case TF_CLASS_SPY: return tf_tournament_classlimit_spy.GetInt(); break;
 		case TF_CLASS_ENGINEER: return tf_tournament_classlimit_engineer.GetInt(); break;
+		case TF_CLASS_VETERAN: return tf_tournament_classlimit_veteran.GetInt(); break;	// OWTF2: new class
+		case TF_CLASS_COMBATMED: return tf_tournament_classlimit_combatmed.GetInt(); break;	// OWTF2: new class
+		case TF_CLASS_CRUSADER: return tf_tournament_classlimit_crusader.GetInt(); break;	// OWTF2: new class
 		default:
 			break;
 		}

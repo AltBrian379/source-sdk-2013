@@ -1333,7 +1333,8 @@ void CProxySniperRifleCharge::OnBind( void *pC_BaseEntity )
 
 	if ( pPlayer )
 	{
-		CTFSniperRifle *pWeapon = assert_cast<CTFSniperRifle*>(pPlayer->GetActiveTFWeapon());
+		// OWTF2: was assert_cast; the active weapon may be another scoped weapon (Biotic Rifle)
+		CTFSniperRifle *pWeapon = dynamic_cast<CTFSniperRifle*>(pPlayer->GetActiveTFWeapon());
 		if ( pWeapon )
 		{
 			float flChargeValue = ( ( 1.0 - pWeapon->GetHUDDamagePerc() ) * 0.8 ) + 0.6;

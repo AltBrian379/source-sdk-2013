@@ -1,0 +1,102 @@
+// OWTF2: Veteran primary weapon (tf_weapon_veteran_rifle).
+// PLACEHOLDER: copy of TF2's tf_weapon_smg script (SMG stats, model and sounds).
+// Changed: printname, WeaponType primary, primary ammo, bucket 0.
+// Veteran stats: base damage 10, no spread, 30-round clip, 9 shots/s, 1.5 s reload (reserve 90: AmmoMax in veteran.txt).
+WeaponData
+{
+	// Attributes Base.
+	"printname"		"#OWTF2_Weapon_VeteranRifle"
+	"BuiltRightHanded"	"0"
+	"weight"		"2"
+	"WeaponType"		"primary"	// OWTF2: the Veteran's primary. Third-person anims come from the item's anim_slot.
+	"ITEM_FLAG_NOITEMPICKUP" 	"1"
+	"HasTeamSkins_Viewmodel"			"1"	
+		
+	// Attributes TF.
+	"Damage"		"14"	// OWTF2: SMG: 8
+	"Range"			"8192"
+	"BulletsPerShot"	"1"
+	"Spread"		"0"	// OWTF2: no spread (SMG: 0.025)
+	"TimeIdle"		"10.0"
+	"TimeIdleEmpty"		"1.0"
+	"TimeFireDelay"		"0.111111"	// OWTF2: 9 shots/s (SMG: 0.1); CTFVeteranRifle::PrimaryAttack keeps it exact
+	"TimeReload"		"1.5"	// OWTF2: used by CTFVeteranRifle::DefaultReload instead of the animation length
+	"ProjectileType"	"projectile_bullet"
+	"BrassModel"		"models/weapons/shells/shell_pistol.mdl"
+	"UseRapidFireCrits"	"1"
+
+	// Ammo & Clip.
+	"primary_ammo"		"TF_AMMO_PRIMARY"
+	"secondary_ammo"	"None"
+	clip_size		30
+	default_clip		30
+
+	// Buckets.
+	"bucket"		"0"
+	"bucket_position"	"0"
+	"TracerEffect"		"bullet_pistol_tracer01"
+
+
+	// Muzzleflash
+	"MuzzleFlashParticleEffect" "muzzle_smg"
+
+	// Animation.
+	"viewmodel"			"models/weapons/c_models/c_smg/c_smg.mdl"
+	"playermodel"		"models/weapons/c_models/c_smg/c_smg.mdl"
+	"anim_prefix"	"ac"
+
+	// Sounds.
+	// Max of 16 per category (ie. max 16 "single_shot" sounds).
+	SoundData
+	{
+		"reload"		"Weapon_SMG.WorldReload"
+		"empty"			"Weapon_SMG.ClipEmpty"	
+		"single_shot"		"Weapon_SMG.Single"
+		"burst"			"Weapon_SMG.SingleCrit"
+	}
+
+	// Weapon Sprite data is loaded by the Client DLL.
+	TextureData
+	{
+		"weapon"
+		{
+				"file"		"sprites/bucket_smg"
+				"x"		"0"
+				"y"		"0"
+				"width"		"200"
+				"height"		"128"
+		}
+		"weapon_s"
+		{	
+				"file"		"sprites/bucket_smg"
+				"x"		"0"
+				"y"		"0"
+				"width"		"200"
+				"height"		"128"
+		}
+		"ammo"
+		{
+				"file"		"sprites/a_icons1"
+				"x"			"55"
+				"y"			"60"
+				"width"		"73"
+				"height"	"15"
+		}
+		"crosshair"
+		{
+				"file"		"sprites/crosshairs"
+				"x"			"0"
+				"y"			"0"
+				"width"		"32"
+				"height"	"32"
+		}
+		"autoaim"
+		{
+				"file"		"sprites/crosshairs"
+				"x"			"0"
+				"y"			"48"
+				"width"		"24"
+				"height"	"24"
+		}
+	}
+}

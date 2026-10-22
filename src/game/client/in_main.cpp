@@ -146,6 +146,8 @@ static	kbutton_t	in_zoom;
 static  kbutton_t   in_grenade1;
 static  kbutton_t   in_grenade2;
 static	kbutton_t	in_attack3;
+static	kbutton_t	in_attack4;	// OWTF2: class ability key
+static	kbutton_t	in_attack5;	// OWTF2: ultimate ability key
 kbutton_t	in_ducktoggle;
 
 /*
@@ -495,6 +497,10 @@ void IN_Grenade2Down( const CCommand &args ) { KeyDown( &in_grenade2, args[1] );
 void IN_XboxStub( const CCommand &args ) { /*do nothing*/ }
 void IN_Attack3Down( const CCommand &args ) { KeyDown(&in_attack3, args[1] );}
 void IN_Attack3Up( const CCommand &args ) { KeyUp(&in_attack3, args[1] );}
+void IN_Attack4Down( const CCommand &args ) { KeyDown(&in_attack4, args[1] );}	// OWTF2
+void IN_Attack4Up( const CCommand &args ) { KeyUp(&in_attack4, args[1] );}	// OWTF2
+void IN_Attack5Down( const CCommand &args ) { KeyDown(&in_attack5, args[1] );}	// OWTF2
+void IN_Attack5Up( const CCommand &args ) { KeyUp(&in_attack5, args[1] );}	// OWTF2
 
 void IN_DuckToggle( const CCommand &args ) 
 { 
@@ -1475,6 +1481,8 @@ int CInput::GetButtonBits( int bResetState )
 	CalcButtonBits( bits, IN_GRENADE1, s_ClearInputState, &in_grenade1, bResetState );
 	CalcButtonBits( bits, IN_GRENADE2, s_ClearInputState, &in_grenade2, bResetState );
 	CalcButtonBits( bits, IN_ATTACK3, s_ClearInputState, &in_attack3, bResetState );
+	CalcButtonBits( bits, IN_ATTACK4, s_ClearInputState, &in_attack4, bResetState );	// OWTF2
+	CalcButtonBits( bits, IN_ATTACK5, s_ClearInputState, &in_attack5, bResetState );	// OWTF2
 
 	if ( KeyState(&in_ducktoggle) )
 	{
@@ -1632,6 +1640,10 @@ static ConCommand endgrenade2( "-grenade2", IN_Grenade2Up );
 static ConCommand startgrenade2( "+grenade2", IN_Grenade2Down );
 static ConCommand startattack3("+attack3", IN_Attack3Down);
 static ConCommand endattack3("-attack3", IN_Attack3Up);
+static ConCommand startattack4("+attack4", IN_Attack4Down);	// OWTF2: class ability key
+static ConCommand endattack4("-attack4", IN_Attack4Up);	// OWTF2
+static ConCommand startattack5("+attack5", IN_Attack5Down);	// OWTF2: ultimate ability key
+static ConCommand endattack5("-attack5", IN_Attack5Up);	// OWTF2
 
 #ifdef TF_CLIENT_DLL
 static ConCommand toggle_duck( "toggle_duck", IN_DuckToggle );

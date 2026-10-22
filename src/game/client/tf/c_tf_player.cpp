@@ -6,6 +6,8 @@
 
 #include "cbase.h"
 #include "c_tf_player.h"
+#include "tf_weapon_veteran_rifle.h"	// OWTF2
+#include "tf_heal_modifiers.h"	// OWTF2: healing window tints
 #include "c_user_message_register.h"
 #include "view.h"
 #include "iclientvehicle.h"
@@ -248,7 +250,11 @@ const char *g_pszHeadGibs[] =
 	"models/player\\gibs\\pyrogib008.mdl",
 	"models/player\\gibs\\spygib007.mdl",
 	"models/player\\gibs\\engineergib006.mdl",
+	"models/player\\gibs\\snipergib005.mdl",	// OWTF2: Veteran uses the Sniper model
+	"models/player\\gibs\\medicgib007.mdl",	// OWTF2: Combat Medic uses the Medic model
+	"models/player\\gibs\\demogib006.mdl",	// OWTF2: Crusader uses the Demoman model
 };
+COMPILE_TIME_ASSERT( ARRAYSIZE( g_pszHeadGibs ) == TF_LAST_NORMAL_CLASS );	// OWTF2: catch a missing class row
 
 const char *g_pszBotHeadGibs[] =
 {
@@ -262,7 +268,11 @@ const char *g_pszBotHeadGibs[] =
 	"models/bots\\gibs\\pyrobot_gib_head.mdl",
 	"models/bots\\gibs\\spybot_gib_head.mdl",
 	"models/bots\\gibs\\engineerbot_gib_head.mdl",
+	"models/bots\\gibs\\sniperbot_gib_head.mdl",	// OWTF2: Veteran uses the Sniper model
+	"models/bots\\gibs\\medicbot_gib_head.mdl",	// OWTF2: Combat Medic uses the Medic model
+	"models/bots\\gibs\\demobot_gib_head.mdl",	// OWTF2: Crusader uses the Demoman model
 };
+COMPILE_TIME_ASSERT( ARRAYSIZE( g_pszBotHeadGibs ) == TF_LAST_NORMAL_CLASS );	// OWTF2: catch a missing class row
 
 const char *pszHeadLabelNames[] =
 {
@@ -1959,6 +1969,16 @@ public:
 				{
 					vResult = Vector ( 7, 5, 1 );
 				}
+			}
+			// OWTF2: a tint (about 20%) for the healing windows (tf_heal_modifiers.h):
+			// purple under no-heal, green under heal boost. Jarate's yellow wins over both.
+			else if ( HealModifiers_IsNoHeal( pPlayer ) )
+			{
+				vResult = Vector( 1.20f, 0.84f, 1.28f );
+			}
+			else if ( HealModifiers_IsHealBoosted( pPlayer ) )
+			{
+				vResult = Vector( 0.88f, 1.20f, 0.88f );
 			}
 			else
 			{
@@ -6682,6 +6702,9 @@ bool C_TFPlayer::CreateMove( float flInputSampleTime, CUserCmd *pCmd )
 		flTauntTurnSpeed = 0.f;
 		VectorCopy( pCmd->viewangles, angMoveAngle );
 	}
+
+	// OWTF2: Veteran rifle recoil moves the view (not while a taunt, kart or frozen input owns it)
+	VeteranRifleRecoil_CreateMove( this, pCmd, !bInTaunt && !m_Shared.InCond( TF_COND_HALLOWEEN_KART ) && !m_Shared.InCond( TF_COND_FREEZE_INPUT ) );
 
 	BaseClass::CreateMove( flInputSampleTime, pCmd );
 
