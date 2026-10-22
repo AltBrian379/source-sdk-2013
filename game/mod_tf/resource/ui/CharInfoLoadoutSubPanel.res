@@ -287,6 +287,32 @@
 		"inactiveimage"		"class_sel_sm_sniper_inactive"
 		"sound_depressed"	"UI/buttonclick.wav"
 		"sound_released"	"UI/buttonclickrelease.wav"
+	}
+	// OWTF2: new class. Medic art until it has its own; the panel lays the class buttons out itself.
+	"combatmed"
+	{
+		"ControlName"		"ImageButton"
+		"fieldName"			"combatmed"
+		"xpos"				"c178"
+		"ypos"				"120"
+		"zpos"				"6"
+		"wide"				"60"
+		"tall"				"120"
+		"autoResize"		"0"
+		"pinCorner"			"2"
+		"visible"			"1"
+		"enabled"			"1"
+		"tabPosition"		"0"
+		"labelText"			""
+		"textAlignment"		"south-west"
+		"Command"			"loadout combatmed"
+		"Default"			"0"
+		"font"				"MenuKeys"
+		"scaleImage"		"1"
+		"activeimage"		"class_sel_sm_medic_red"
+		"inactiveimage"		"class_sel_sm_medic_inactive"
+		"sound_depressed"	"UI/buttonclick.wav"
+		"sound_released"	"UI/buttonclickrelease.wav"
 	}	
 	
 		"ShowBackpackButton"

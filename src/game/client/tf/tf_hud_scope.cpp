@@ -175,7 +175,8 @@ void CHudScopeCharge::Paint( void )
 		return;
 
 	// Make sure the current weapon is a sniper rifle
-	CTFSniperRifle *pWeapon = assert_cast<CTFSniperRifle*>(pPlayer->GetActiveTFWeapon());
+	// OWTF2: other weapons scope too (the Combat Medic's Biotic Rifle) and have no charge to show
+	CTFSniperRifle *pWeapon = dynamic_cast<CTFSniperRifle*>(pPlayer->GetActiveTFWeapon());
 	if ( !pWeapon )
 		return;
 

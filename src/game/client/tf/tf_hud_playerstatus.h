@@ -196,6 +196,7 @@ private:
 	vgui::ImagePanel	*m_pMarkedForDeathImageSilent;
 	vgui::ImagePanel	*m_pWheelOfDoomImage;
 	vgui::ImagePanel	*m_pSlowedImage;
+	vgui::ImagePanel	*m_pNoHealImage;	// OWTF2: no-heal window (tf_heal_modifiers.h): the spawn room "no entry" sign over the health cross
 	CExLabel			*m_pPlayerLevelLabel;
 
 	CUtlVector<CTFBuffInfo*> m_vecBuffInfo;

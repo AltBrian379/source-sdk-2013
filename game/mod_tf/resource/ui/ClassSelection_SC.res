@@ -68,14 +68,14 @@
 		"actionName"	"menu_right"
 	}
 
-	// OWTF2: moved right of Veteran; TF_CLASS_RANDOM is now 13
+	// OWTF2: moved right of the mod's classes; TF_CLASS_RANDOM is now 14
 	"random"
 	{
 		"ControlName"		"CExImageButton"
 		"fieldName"			"random"
-		"xpos"				"c270"
-		"xpos_lodef"				"c237"
-		"xpos_hidef"				"c262"
+		"xpos"				"c320"
+		"xpos_lodef"				"c287"
+		"xpos_hidef"				"c312"
 		"ypos"				"-5"
 		"ypos_lodef"				"9"
 		"ypos_hidef"				"0"
@@ -89,7 +89,7 @@
 		"tabPosition"		"0"
 		"labelText"			""
 		"textAlignment"		"south-west"
-		"Command"			"select 13"
+		"Command"			"select 14"
 		"Default"			"1"
 		"font"				"MenuKeys"
 		"scaleImage"		"1"
@@ -1015,6 +1015,70 @@
 			"scaleImage"	"1"
 		}				
 	}
+	// OWTF2: new class. Medic art until it has its own.
+	"combatmed"
+	{
+		"ControlName"		"CExImageButton"
+		"fieldName"			"combatmed"
+		"xpos"				"c258"
+		"xpos_hidef"				"c250"
+		"xpos_lodef"		"c225"
+		"ypos"				"-5"
+		"ypos_lodef"				"9"
+		"ypos_hidef"				"0"
+		"zpos"				"6"
+		"wide"				"50"
+		"tall"				"100"
+		"autoResize"		"0"
+		"pinCorner"			"2"
+		"visible"			"1"
+		"enabled"			"1"
+		"tabPosition"		"0"
+		"labelText"			""	[$WIN32]
+		"labelText"			""		[$X360]
+		"textAlignment"		"south-west"
+		"Command"			"select 11"
+		"Default"			"0"
+		"font"				"MenuKeys"
+		"scaleImage"		"1"
+		
+		"image_default"		"class_sel_sm_medic_inactive"
+		"image_armed"		"class_sel_sm_medic_inactive"
+		
+		"fgcolor"			"TanDark"
+		"defaultFgColor_override" "TanDark"
+		"armedFgColor_override" "TanDark"
+		"depressedFgColor_override" "TanDark"
+		
+		"sound_depressed"	"UI/buttonclick.wav"
+		"sound_released"	"UI/buttonclickrelease.wav"
+		"sound_armed"		"UI/buttonrollover.wav"
+		
+		"paintbackground"	"0"
+		
+		"image_drawcolor"		"255 255 255 180"
+		"image_armedcolor"		"255 255 255 255"
+		"image_selectedcolor"	"255 255 255 255"
+		
+		"stayselectedonclick"	"1"
+		"selectonhover"			"1"
+		"keyboardinputenabled"	"0"
+		
+		"SubImage"
+		{
+			"ControlName"	"ImagePanel"
+			"fieldName"		"SubImage"
+			"xpos"			"0"
+			"ypos"			"0"
+			"zpos"			"7"
+			"wide"			"50"
+			"tall"			"100"
+			"visible"		"1"
+			"enabled"		"1"
+			"image"			"class_sel_sm_medic_inactive"
+			"scaleImage"	"1"
+		}				
+	}
 	"SpyHintIcon"
 	{
 		"ControlName"	"CSCHintIcon"
@@ -1705,6 +1769,26 @@
 		"enabled"		"1"
 		"tabPosition"	"0"
 		"labelText"		"%numVeteran%"
+		"textAlignment"	"center"
+		"font"			"MenuClassBuckets"
+		"fgcolor"		"TanLight"
+	}
+	// OWTF2: new class
+	"numCombatMed" [$WIN32]
+	{
+		"ControlName"	"CExLabel"
+		"fieldName"		"numCombatMed"
+		"xpos"			"c258"
+		"ypos"			"10"
+		"zpos"			"5"
+		"wide"			"50"
+		"tall"			"12"
+		"autoResize"	"1"
+		"pinCorner"		"2"
+		"visible"		"1"
+		"enabled"		"1"
+		"tabPosition"	"0"
+		"labelText"		"%numCombatMed%"
 		"textAlignment"	"center"
 		"font"			"MenuClassBuckets"
 		"fgcolor"		"TanLight"

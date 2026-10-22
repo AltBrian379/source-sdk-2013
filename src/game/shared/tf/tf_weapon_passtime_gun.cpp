@@ -1012,6 +1012,7 @@ static ConVar *s_pThrowSpeedConvars[] = {	// OWTF2: unsized so the assert below 
 	&tf_passtime_throwspeed_spy,
 	&tf_passtime_throwspeed_engineer,
 	&tf_passtime_throwspeed_soldier,	// OWTF2: TF_CLASS_VETERAN, Soldier tuning for now
+	&tf_passtime_throwspeed_medic,	// OWTF2: TF_CLASS_COMBATMED, Medic tuning for now
 };
 COMPILE_TIME_ASSERT( ARRAYSIZE( s_pThrowSpeedConvars ) == TF_LAST_NORMAL_CLASS );	// OWTF2
 
@@ -1028,6 +1029,7 @@ static ConVar *s_pThrowArcConvars[] = {	// OWTF2: unsized so the assert below ca
 	&tf_passtime_throwarc_spy,
 	&tf_passtime_throwarc_engineer,
 	&tf_passtime_throwarc_soldier,	// OWTF2: TF_CLASS_VETERAN, Soldier tuning for now
+	&tf_passtime_throwarc_medic,	// OWTF2: TF_CLASS_COMBATMED, Medic tuning for now
 };
 COMPILE_TIME_ASSERT( ARRAYSIZE( s_pThrowArcConvars ) == TF_LAST_NORMAL_CLASS );	// OWTF2
 

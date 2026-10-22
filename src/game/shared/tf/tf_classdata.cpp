@@ -22,6 +22,7 @@ extern bool UseHWMorphModels();
 #define TF_CLASS_SPY_FILE				"scripts/playerclasses/spy"
 #define TF_CLASS_ENGINEER_FILE			"scripts/playerclasses/engineer"
 #define TF_CLASS_VETERAN_FILE			"scripts/playerclasses/veteran"	// OWTF2: new class
+#define TF_CLASS_COMBATMED_FILE			"scripts/playerclasses/combatmed"	// OWTF2: new class
 #define TF_CLASS_CIVILIAN_FILE			"scripts/playerclasses/civilian"
 
 const char *s_aPlayerClassFiles[] =
@@ -37,6 +38,7 @@ const char *s_aPlayerClassFiles[] =
 	TF_CLASS_SPY_FILE,
 	TF_CLASS_ENGINEER_FILE,
 	TF_CLASS_VETERAN_FILE,		// OWTF2: new class
+	TF_CLASS_COMBATMED_FILE,	// OWTF2: new class
 	TF_CLASS_CIVILIAN_FILE
 };
 
@@ -59,6 +61,7 @@ TFPlayerClassData_t::TFPlayerClassData_t()
 	m_nMaxArmor = 0;
 	m_flUltimateCost = 0.0f;	// OWTF2
 	m_flUltimateDuration = 0.0f;	// OWTF2
+	m_flUltimateCastTime = 0.0f;	// OWTF2
 
 #ifdef GAME_DLL
 	for ( int i = 0; i < ARRAYSIZE( m_szDeathSound ); ++i )
@@ -198,6 +201,7 @@ void TFPlayerClassData_t::ParseData( KeyValues *pKeyValuesData )
 	// OWTF2: ultimate
 	m_flUltimateCost = MAX( 0.0f, pKeyValuesData->GetFloat( "ultimate_cost", 0.0f ) );
 	m_flUltimateDuration = MAX( 0.0f, pKeyValuesData->GetFloat( "ultimate_duration", 0.0f ) );
+	m_flUltimateCastTime = MAX( 0.0f, pKeyValuesData->GetFloat( "ultimate_cast_time", 0.0f ) );
 
 #ifdef GAME_DLL		// right now we only emit these sounds from server. if that changes we can do this in both dlls
 

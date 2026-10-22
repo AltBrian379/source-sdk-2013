@@ -11,6 +11,7 @@
 #include "tf_gamerules.h"
 #include "in_buttons.h"
 #include "tf_veteran_abilities.h"
+#include "tf_combatmed_abilities.h"
 
 #ifdef CLIENT_DLL
 #include "c_tf_player.h"
@@ -61,6 +62,12 @@ float Ultimate_GetDuration( const CTFPlayer *pPlayer )
 	return pData ? pData->m_flUltimateDuration : 0.0f;
 }
 
+float Ultimate_GetCastTime( const CTFPlayer *pPlayer )
+{
+	const TFPlayerClassData_t *pData = GetClassData( pPlayer );
+	return pData ? pData->m_flUltimateCastTime : 0.0f;
+}
+
 bool Ultimate_HasUltimate( const CTFPlayer *pPlayer )
 {
 	return Ultimate_GetCost( pPlayer ) > 0.0f;
@@ -86,6 +93,16 @@ bool Ultimate_IsActive( const CTFPlayer *pPlayer )
 	return pPlayer && pPlayer->m_Shared.IsUltimateActive();
 }
 
+bool Ultimate_IsCasting( const CTFPlayer *pPlayer )
+{
+	return Ultimate_IsActive( pPlayer ) && gpGlobals->curtime < pPlayer->m_Shared.GetUltimateCastEndTime();
+}
+
+bool Ultimate_IsEffectActive( const CTFPlayer *pPlayer )
+{
+	return Ultimate_IsActive( pPlayer ) && !Ultimate_IsCasting( pPlayer );
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: Input. The server decides; the client sees the result over the network.
 //-----------------------------------------------------------------------------
@@ -102,8 +119,29 @@ void Ultimate_PostFrame( CTFPlayer *pPlayer )
 #ifdef GAME_DLL
 
 //-----------------------------------------------------------------------------
-// Purpose: Per-hero start and end of the ultimate's effect.
+// Purpose: Per-hero hooks: can it be used now, cast start (on use), cast end
+//          (the effect starts), end.
 //-----------------------------------------------------------------------------
+static bool CanUseUltimate( CTFPlayer *pPlayer )
+{
+	switch ( pPlayer->GetPlayerClass()->GetClassIndex() )
+	{
+	case TF_CLASS_VETERAN:	return Veteran_CanUseUltimate( pPlayer );
+	case TF_CLASS_COMBATMED:	return CombatMed_CanUseUltimate( pPlayer );
+	default:				return true;
+	}
+}
+
+static void OnUltimateCastFinished( CTFPlayer *pPlayer )
+{
+	switch ( pPlayer->GetPlayerClass()->GetClassIndex() )
+	{
+	case TF_CLASS_VETERAN:	Veteran_OnUltimateCastEnd( pPlayer );	break;
+	case TF_CLASS_COMBATMED:	CombatMed_OnUltimateCastEnd( pPlayer );	break;
+	default:				break;
+	}
+}
+
 static void OnUltimateStarted( CTFPlayer *pPlayer )
 {
 	switch ( pPlayer->GetPlayerClass()->GetClassIndex() )
@@ -160,20 +198,33 @@ void Ultimate_ResetCharge( CTFPlayer *pPlayer )
 //-----------------------------------------------------------------------------
 bool Ultimate_TryActivate( CTFPlayer *pPlayer )
 {
-	if ( !pPlayer || !pPlayer->IsAlive() || !Ultimate_IsReady( pPlayer ) )
+	if ( !pPlayer || !pPlayer->IsAlive() || !Ultimate_IsReady( pPlayer ) || !CanUseUltimate( pPlayer ) )
 		return false;
 
-	if ( Ultimate_GetDuration( pPlayer ) > 0.0f )
+	const float flCastTime = Ultimate_GetCastTime( pPlayer );
+	if ( flCastTime > 0.0f )
+	{
+		// Active from now, but the effect (and the drain) waits for the cast; Ultimate_Think
+		// runs the cast-end hook, then drains or, for an instant ultimate, ends it.
+		pPlayer->m_Shared.SetUltimateActive( true );
+		pPlayer->m_Shared.SetUltimateCastEndTime( gpGlobals->curtime + flCastTime );
+		pPlayer->m_Shared.m_bUltimateCastPending = true;
+		OnUltimateStarted( pPlayer );
+	}
+	else if ( Ultimate_GetDuration( pPlayer ) > 0.0f )
 	{
 		// Drains over the duration in Ultimate_Think.
 		pPlayer->m_Shared.SetUltimateActive( true );
+		pPlayer->m_Shared.SetUltimateCastEndTime( 0.0f );
 		OnUltimateStarted( pPlayer );
+		OnUltimateCastFinished( pPlayer );
 	}
 	else
 	{
 		// Instant: spent at once.
 		pPlayer->m_Shared.SetUltimateCharge( 0.0f );
 		OnUltimateStarted( pPlayer );
+		OnUltimateCastFinished( pPlayer );
 		OnUltimateEnded( pPlayer );
 	}
 	return true;
@@ -186,7 +237,47 @@ void Ultimate_End( CTFPlayer *pPlayer )
 
 	pPlayer->m_Shared.SetUltimateActive( false );
 	pPlayer->m_Shared.SetUltimateCharge( 0.0f );
+	pPlayer->m_Shared.SetUltimateCastEndTime( 0.0f );
+	pPlayer->m_Shared.m_bUltimateCastPending = false;
 	OnUltimateEnded( pPlayer );
+}
+
+float Ultimate_PlayVoiceLine( CTFPlayer *pPlayer, const char *pszSound, float flRadius, int iPitch )
+{
+	if ( !pPlayer || !pszSound || iPitch <= 0 )
+		return 0.0f;
+
+	CRecipientFilter filter;
+	for ( int i = 1; i <= gpGlobals->maxClients; i++ )
+	{
+		CBasePlayer *pListener = UTIL_PlayerByIndex( i );
+		if ( pListener && !pListener->IsFakeClient() &&
+			 ( pListener->GetAbsOrigin() - pPlayer->GetAbsOrigin() ).LengthSqr() <= flRadius * flRadius )
+		{
+			filter.AddRecipient( pListener );
+		}
+	}
+	filter.MakeReliable();
+
+	EmitSound_t ep;
+	ep.m_nChannel = CHAN_VOICE2;
+	ep.m_pSoundName = pszSound;
+	ep.m_flVolume = VOL_NORM;
+	ep.m_SoundLevel = SNDLVL_NONE;
+	ep.m_nPitch = iPitch;
+	CBaseEntity::EmitSound( filter, pPlayer->entindex(), ep );
+
+	return CBaseEntity::GetSoundDuration( pszSound, NULL ) * 100.0f / iPitch;
+}
+
+bool Ultimate_InterruptCast( CTFPlayer *pPlayer )
+{
+	if ( !Ultimate_IsCasting( pPlayer ) )
+		return false;
+
+	// Ending it clears the charge, and the cast-end hook never runs.
+	Ultimate_End( pPlayer );
+	return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -218,6 +309,8 @@ void Ultimate_Think( CTFPlayer *pPlayer )
 		{
 			shared.SetUltimateActive( false );
 			shared.SetUltimateCharge( 0.0f );
+			shared.SetUltimateCastEndTime( 0.0f );
+			shared.m_bUltimateCastPending = false;
 		}
 		shared.m_iUltimateChargeClass = iClass;
 	}
@@ -227,9 +320,26 @@ void Ultimate_Think( CTFPlayer *pPlayer )
 
 	if ( Ultimate_IsActive( pPlayer ) )
 	{
-		// Dying ends it; otherwise drain over the duration.
+		// Dying ends it, even mid-cast.
+		if ( !pPlayer->IsAlive() )
+		{
+			Ultimate_End( pPlayer );
+			return;
+		}
+
+		// Nothing drains during the cast.
+		if ( Ultimate_IsCasting( pPlayer ) )
+			return;
+
+		if ( shared.m_bUltimateCastPending )
+		{
+			shared.m_bUltimateCastPending = false;
+			OnUltimateCastFinished( pPlayer );
+		}
+
+		// Otherwise drain over the duration (an instant ultimate with a cast ends here).
 		const float flDuration = Ultimate_GetDuration( pPlayer );
-		if ( !pPlayer->IsAlive() || flDuration <= 0.0f )
+		if ( flDuration <= 0.0f )
 		{
 			Ultimate_End( pPlayer );
 			return;
@@ -308,6 +418,10 @@ void Ultimate_OnDamageDealt( const CTakeDamageInfo &info, CBaseEntity *pVictim, 
 	if ( pVictim == pAttacker || pVictim->GetTeamNumber() == pAttacker->GetTeamNumber() )
 		return;
 
+	// Nor from damage to buildings.
+	if ( pVictim->IsBaseObject() )
+		return;
+
 	if ( Ultimate_IsUltimateDamage( info, pAttacker ) )
 		return;
 
@@ -366,6 +480,17 @@ CON_COMMAND_F( tf_ultimate_charge_set, "Ultimate: set your ultimate charge in po
 		Ultimate_End( pPlayer );
 	}
 	Ultimate_SetCharge( pPlayer, atof( args[1] ) );
+}
+
+CON_COMMAND_F( tf_ultimate_interrupt_test, "Ultimate: interrupt a casting ultimate, like a Sleep Dart hit: tf_ultimate_interrupt_test [entindex, default you]", FCVAR_CHEAT )
+{
+	CTFPlayer *pPlayer = ToTFPlayer( UTIL_GetCommandClient() );
+	if ( args.ArgC() > 1 )
+	{
+		pPlayer = ToTFPlayer( UTIL_PlayerByIndex( atoi( args[1] ) ) );
+	}
+
+	Msg( "tf_ultimate_interrupt_test: %s\n", Ultimate_InterruptCast( pPlayer ) ? "interrupted" : "not casting" );
 }
 
 #endif // GAME_DLL

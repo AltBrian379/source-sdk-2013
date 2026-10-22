@@ -21,6 +21,7 @@ class KeyValues;
 
 #define OWTF2_ITEMS_FILE				"scripts/items/items_owtf2.txt"
 #define OWTF2_ITEMDEF_VETERAN_RIFLE		60000
+#define OWTF2_ITEMDEF_VETERAN_FIELD_RATIONS	60001
 
 // Called by CEconItemSchema::BInitTextBuffer with the parsed items_game.txt.
 void OWTF2_MergeModItemSchema( KeyValues *pSchemaKV );

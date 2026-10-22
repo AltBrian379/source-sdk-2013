@@ -290,6 +290,7 @@ int g_nLoadoutClassOrder[] =
 	TF_CLASS_SNIPER,
 	TF_CLASS_SPY,
 	TF_CLASS_VETERAN,	// OWTF2: new class
+	TF_CLASS_COMBATMED,	// OWTF2: new class
 };
 COMPILE_TIME_ASSERT( ARRAYSIZE( g_nLoadoutClassOrder ) == NUM_CLASSES_IN_LOADOUT_PANEL );	// OWTF2
 
@@ -316,6 +317,7 @@ CCharInfoLoadoutSubPanel::CCharInfoLoadoutSubPanel(Panel *parent) : vgui::Proper
 	m_pClassButtons[ TF_CLASS_SNIPER ] = new CImageButton( this, "sniper" );
 	m_pClassButtons[ TF_CLASS_SPY ] = new CImageButton( this, "spy" );
 	m_pClassButtons[ TF_CLASS_VETERAN ] = new CImageButton( this, "veteran" );	// OWTF2: laid out in CharInfoLoadoutSubPanel.res
+	m_pClassButtons[ TF_CLASS_COMBATMED ] = new CImageButton( this, "combatmed" );	// OWTF2: laid out in CharInfoLoadoutSubPanel.res
 
 	for( int i = 0; i < Q_ARRAYSIZE( m_pClassButtons ); i++ )
 	{

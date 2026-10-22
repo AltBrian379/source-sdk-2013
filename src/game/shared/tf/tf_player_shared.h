@@ -513,6 +513,28 @@ public:
 	void	SetUltimateCharge( float flPoints ) { m_flUltimateCharge = MAX( 0.0f, flPoints ); }
 	bool	IsUltimateActive( void ) const { return m_bUltimateActive; }
 	void	SetUltimateActive( bool bActive ) { m_bUltimateActive = bActive; }
+	float	GetUltimateCastEndTime( void ) const { return m_flUltimateCastEndTime; }
+	void	SetUltimateCastEndTime( float flTime ) { m_flUltimateCastEndTime = flTime; }
+	// OWTF2: incoming-healing windows (no-heal, heal boost). Use tf_heal_modifiers.h, which applies the rules.
+	float	GetNoHealEndTime( void ) const { return m_flNoHealEndTime; }
+	float	GetHealBoostEndTime( void ) const { return m_flHealBoostEndTime; }
+	// OWTF2: Combat Medic's Nano Boost on this player (tf_combatmed_abilities.cpp): when it ends.
+	float	GetNanoBoostEndTime( void ) const { return m_flNanoBoostEndTime; }
+#ifdef GAME_DLL
+	void	SetNanoBoostEndTime( float flTime ) { m_flNanoBoostEndTime = flTime; }
+#endif
+#ifdef GAME_DLL
+	void	SetNoHealEndTime( float flTime ) { m_flNoHealEndTime = flTime; }
+	void	SetHealBoost( float flEndTime, float flScale ) { m_flHealBoostEndTime = flEndTime; m_flHealBoostScale = flScale; }
+	float	GetHealBoostScale( void ) const { return m_flHealBoostScale; }
+	// OWTF2: resistance of the defense buffs (TF_COND_DEFENSEBUFF, _NO_CRIT_BLOCK) set by whoever applied
+	// them; < 0 = TF2's (35%, 50% against sentries). Reset when a defense buff is removed.
+	void	SetDefenseBuffResistance( float flResistance ) { m_flDefenseBuffResistance = flResistance; }
+	float	GetDefenseBuffResistance( void ) const { return m_flDefenseBuffResistance; }
+	// OWTF2: Sleep Dart sleep (tf_combatmed_abilities.cpp): when the sleep ends; 0 = not asleep.
+	void	SetSleepEndTime( float flTime ) { m_flSleepEndTime = flTime; }
+	float	GetSleepEndTime( void ) const { return m_flSleepEndTime; }
+#endif
 	void	ResetRageSystem( void );
 
 	void	ActivateRageBuff( CBaseEntity *pBuffItem, int iBuffType );
@@ -1120,10 +1142,23 @@ private:
 	// OWTF2: ultimate (logic in tf_ultimate.cpp)
 	CNetworkVar( float, m_flUltimateCharge );	// points, 0..class ultimate_cost
 	CNetworkVar( bool, m_bUltimateActive );
+	CNetworkVar( float, m_flUltimateCastEndTime );	// while active: when the cast ends and the effect starts
+
+	// OWTF2: incoming-healing windows (tf_heal_modifiers.cpp). Networked to everyone (tints); only the
+	// server writes them, so they have no DEFINE_PRED_FIELD.
+	CNetworkVar( float, m_flNoHealEndTime );
+	CNetworkVar( float, m_flHealBoostEndTime );
+	CNetworkVar( float, m_flNanoBoostEndTime );	// OWTF2: Nano Boost; read by the predicted speed, written by the server only
+#ifdef GAME_DLL
+	float	m_flHealBoostScale;			// OWTF2: incoming healing multiplier while boosted
+	float	m_flDefenseBuffResistance;	// OWTF2: < 0 = TF2's defense buff resistance
+	float	m_flSleepEndTime;			// OWTF2: Sleep Dart sleep end; 0 = not asleep
+#endif
 public:
 	// Server bookkeeping for tf_ultimate.cpp (not networked)
 	int		m_iUltimateChargeClass;
 	float	m_flUltimateLastThink;
+	bool	m_bUltimateCastPending;		// cast-end hook not run yet
 private:
 
 	RageBuff m_RageBuffSlots[kBuffSlot_MAX];

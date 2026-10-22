@@ -333,12 +333,26 @@ private:
 
 //-----------------------------------------------------------------------------
 // OWTF2: stock TF2 content keyed by class number (ClassTips_<n>_*, music.class_menu_0<n>)
-// uses the original enum, where Random was 12. Adding Veteran moved Random to 13.
+// uses the original enum, where Random was 12. Adding the mod's classes moved it (now 14).
 //-----------------------------------------------------------------------------
 static const int TF_STOCK_CLASS_RANDOM = 12;
 static int GetStockContentClassIndex( int iClass )
 {
 	return ( iClass == TF_CLASS_RANDOM ) ? TF_STOCK_CLASS_RANDOM : iClass;
+}
+
+//-----------------------------------------------------------------------------
+// OWTF2: the mod's classes have no menu art or music of their own yet; use the
+// stock class whose model they borrow.
+//-----------------------------------------------------------------------------
+static int GetPlaceholderContentClass( int iClass )
+{
+	switch ( iClass )
+	{
+	case TF_CLASS_VETERAN:		return TF_CLASS_SNIPER;
+	case TF_CLASS_COMBATMED:	return TF_CLASS_MEDIC;
+	default:					return iClass;
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -502,6 +516,7 @@ CTFClassMenu::CTFClassMenu( IViewPort *pViewPort )
 	m_pClassButtons[TF_CLASS_ENGINEER] = new CExImageButton( this, "engineer", "", this );
 	m_pClassButtons[TF_CLASS_SPY] = new CExImageButton( this, "spy", "", this );
 	m_pClassButtons[TF_CLASS_VETERAN] = new CExImageButton( this, "veteran", "", this );	// OWTF2: new class; laid out in ClassSelection.res
+	m_pClassButtons[TF_CLASS_COMBATMED] = new CExImageButton( this, "combatmed", "", this );	// OWTF2: new class; laid out in ClassSelection.res
 	m_pClassButtons[TF_CLASS_RANDOM] = new CExImageButton( this, "random", "", this );
 #endif
 
@@ -585,8 +600,8 @@ void CTFClassMenu::ApplySchemeSettings( IScheme *pScheme )
 		if ( !IsValidTFPlayerClass( i ) && i != TF_CLASS_RANDOM )
 			continue;
 
-		// OWTF2: Veteran has no class_sel_sm_veteran_* art yet; use the Sniper images
-		const int iImageClass = ( i == TF_CLASS_VETERAN ) ? (int)TF_CLASS_SNIPER : i;
+		// OWTF2: the mod's classes have no class_sel_sm_* art yet; use the stock class's images
+		const int iImageClass = GetPlaceholderContentClass( i );
 		m_pClassButtons[i]->SetImageSelected( CFmtStr( "class_sel_sm_%s_%s", g_aRawPlayerClassNamesShort[iImageClass], pTeamExtension ).Access() );	// OWTF2: was [i]
 		if( i != TF_CLASS_RANDOM )
 		{
@@ -708,6 +723,7 @@ const char *g_pszLegacyClassSelectVCDWeapons[] =	// OWTF2: unsized so the assert
 	"",										// TF_CLASS_SPY,				// weapons handled individually
 	"tf_weapon_wrench",						// TF_CLASS_ENGINEER,		
 	"",										// TF_CLASS_VETERAN, OWTF2: new class; weapons handled individually
+	"",										// TF_CLASS_COMBATMED, OWTF2: new class; weapons handled individually
 };
 COMPILE_TIME_ASSERT( ARRAYSIZE( g_pszLegacyClassSelectVCDWeapons ) == TF_LAST_NORMAL_CLASS );	// OWTF2
 
@@ -724,6 +740,7 @@ int g_iLegacyClassSelectWeaponSlots[] =	// OWTF2: unsized so the assert below ca
 	LOADOUT_POSITION_MELEE,			// TF_CLASS_SPY,
 	LOADOUT_POSITION_MELEE,			// TF_CLASS_ENGINEER,		
 	LOADOUT_POSITION_PRIMARY,		// TF_CLASS_VETERAN, OWTF2: new class
+	LOADOUT_POSITION_PRIMARY,		// TF_CLASS_COMBATMED, OWTF2: new class
 };
 COMPILE_TIME_ASSERT( ARRAYSIZE( g_iLegacyClassSelectWeaponSlots ) == TF_LAST_NORMAL_CLASS );	// OWTF2
 
@@ -828,9 +845,9 @@ void CTFClassMenu::SelectClass( int iClass )
 	enginesound->StopSoundByGuid( m_nBaseMusicGuid );
 	CBroadcastRecipientFilter filter;
 	char nClassMusicStr[64];
-	// OWTF2: Veteran has no menu music of its own; use the Sniper track. Music is numbered by the
-	// stock class enum, so Random maps back too. Plain int: sprintf below is varargs.
-	int iMusicClass = ( iClass == TF_CLASS_VETERAN ) ? (int)TF_CLASS_SNIPER : GetStockContentClassIndex( iClass );
+	// OWTF2: the mod's classes have no menu music of their own; use the stock class's track. Music is
+	// numbered by the stock class enum, so Random maps back too. Plain int: sprintf below is varargs.
+	int iMusicClass = GetStockContentClassIndex( GetPlaceholderContentClass( iClass ) );
 	if ( TFGameRules() && TFGameRules()->IsMannVsMachineMode() )
 	{
 		sprintf( nClassMusicStr, "music.mvm_class_menu_0%i", iMusicClass );	// OWTF2: was iClass
@@ -1373,6 +1390,7 @@ static const char *g_sDialogVariables[] = {
 	"numSniper",
 	"numSpy",
 	"numVeteran",	// OWTF2: new class
+	"numCombatMed",	// OWTF2: new class
 	"",
 };
 COMPILE_TIME_ASSERT( ARRAYSIZE( g_sDialogVariables ) == TF_LAST_NORMAL_CLASS + 1 );	// OWTF2: catch a missing class row
@@ -1391,6 +1409,7 @@ static const char *g_sClassImagesBlue[] = {
 	"class_sel_sm_sniper_blu",
 	"class_sel_sm_spy_blu",
 	"class_sel_sm_sniper_blu",	// OWTF2: Veteran, Sniper art for now
+	"class_sel_sm_medic_blu",	// OWTF2: Combat Medic, Medic art for now
 
 	"class_sel_sm_scout_blu",
 };
@@ -1410,6 +1429,7 @@ static const char *g_sClassImagesRed[] = {
 	"class_sel_sm_sniper_red",
 	"class_sel_sm_spy_red",
 	"class_sel_sm_sniper_red",	// OWTF2: Veteran, Sniper art for now
+	"class_sel_sm_medic_red",	// OWTF2: Combat Medic, Medic art for now
 
 	"class_sel_sm_scout_red",
 };
@@ -1429,6 +1449,7 @@ int g_ClassDefinesRemap[] = {
 	TF_CLASS_SNIPER,
 	TF_CLASS_SPY,
 	TF_CLASS_VETERAN,	// OWTF2: new class
+	TF_CLASS_COMBATMED,	// OWTF2: new class
 	TF_CLASS_CIVILIAN,
 };
 COMPILE_TIME_ASSERT( ARRAYSIZE( g_ClassDefinesRemap ) == TF_LAST_NORMAL_CLASS + 1 );	// OWTF2: catch a missing class row

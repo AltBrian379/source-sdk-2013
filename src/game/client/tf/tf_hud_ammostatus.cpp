@@ -29,6 +29,7 @@
 #include "c_tf_player.h"
 #include "ihudlcd.h"
 #include "tf_hud_ammostatus.h"
+#include "tf_hud_itemeffectmeter.h"	// OWTF2: stack above the cooldown meters
 #include "tf_gamerules.h"
 #include "tf_logic_halloween_2014.h"
 
@@ -99,6 +100,13 @@ void CTFHudWeaponAmmo::UpdatePositionForUltimateMeter( void )
 		int nUltX, nUltY;
 		pUltimate->GetPos( nUltX, nUltY );
 		nY = MIN( nY, nUltY - GetTall() );
+
+		// The item effect meters (cooldowns) sit on top of the ultimate meter; go above them.
+		int nMetersTop;
+		if ( g_ItemEffectMeterManager.GetRowTopAboveUltimateMeter( nMetersTop ) )
+		{
+			nY = MIN( nY, nMetersTop - GetTall() );
+		}
 	}
 
 	int nCurX, nCurY;

@@ -159,9 +159,9 @@ inline bool IsValidPickupWeaponSlot( int iSlot )
 
 // The total number of loadouts to track for each player.
 // Right now, hardcoded to match TF's 10 classes.
-// OWTF2: was (10+1). Now 11 classes (Veteran added before Civilian); must equal TF_CLASS_COUNT_ALL,
+// OWTF2: was (10+1). Now 12 classes (Veteran and Combat Medic added before Civilian); must equal TF_CLASS_COUNT_ALL,
 // which tf_item_schema.cpp asserts. This header does not include tf_shareddefs.h, hence the literal.
-#define LOADOUT_COUNT					(11+1)	// 0th class is undefined
+#define LOADOUT_COUNT					(12+1)	// 0th class is undefined
 
 // Halloween! (Shared by GC and game client.)
 enum EHalloweenMap

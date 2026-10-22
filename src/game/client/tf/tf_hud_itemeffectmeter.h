@@ -41,9 +41,13 @@ public:
 	void			Update( C_TFPlayer* pPlayer );
 	virtual void	FireGameEvent( IGameEvent *event );
 	int				GetNumEnabled( void );
+	bool			GetRowTopAboveUltimateMeter( int &nTop );	// OWTF2
 
 private:
+	void			PositionAboveUltimateMeter( void );	// OWTF2
+
 	CUtlVector< vgui::DHANDLE< CHudItemEffectMeter > >	m_Meters;
+	bool			m_bAboveUltimateMeter = false;	// OWTF2: the meters are moved off their .res positions
 };
 
 //-----------------------------------------------------------------------------

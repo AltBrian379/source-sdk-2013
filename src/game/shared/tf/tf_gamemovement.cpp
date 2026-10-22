@@ -22,6 +22,7 @@
 #include "tf_weapon_buff_item.h"
 #include "halloween/tf_weapon_spellbook.h"
 #include "tf_logic_player_destruction.h"
+#include "tf_veteran_abilities.h"	// OWTF2
 
 #ifdef CLIENT_DLL
 	#include "c_tf_player.h"
@@ -198,6 +199,9 @@ void CTFGameMovement::PlayerMove()
 
 	// call base class to do movement
 	BaseClass::PlayerMove();
+
+	// OWTF2: Veteran Sprint ends when forward movement stops (input released or blocked)
+	Veteran_SprintPostMove( m_pTFPlayer, mv );
 
 	// handle player's interaction with water
 	int nNewWaterLevel = m_pTFPlayer->GetWaterLevel();

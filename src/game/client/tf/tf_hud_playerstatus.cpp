@@ -26,6 +26,7 @@
 #include "c_tf_player.h"
 #include "tf_shareddefs.h"
 #include "tf_hud_playerstatus.h"
+#include "tf_heal_modifiers.h"	// OWTF2: no-heal sign
 #include "tf_gamerules.h"
 #include "tf_logic_halloween_2014.h"
 #include "tf_logic_player_destruction.h"
@@ -57,6 +58,7 @@ static const char *g_szBlueClassImages[] =
 	"../hud/class_spyblue",
 	"../hud/class_engiblue",
 	"../hud/class_sniperblue",	// OWTF2: Veteran, Sniper art for now
+	"../hud/class_medicblue",	// OWTF2: Combat Medic, Medic art for now
 	"../hud/class_scoutblue",
 };
 COMPILE_TIME_ASSERT( ARRAYSIZE( g_szBlueClassImages ) == TF_CLASS_COUNT_ALL );	// OWTF2: catch a missing class row
@@ -74,6 +76,7 @@ static const char *g_szRedClassImages[] =
 	"../hud/class_spyred",
 	"../hud/class_engired",
 	"../hud/class_sniperred",	// OWTF2: Veteran, Sniper art for now
+	"../hud/class_medicred",	// OWTF2: Combat Medic, Medic art for now
 	"../hud/class_scoutred",
 };
 COMPILE_TIME_ASSERT( ARRAYSIZE( g_szRedClassImages ) == TF_CLASS_COUNT_ALL );	// OWTF2: catch a missing class row
@@ -699,6 +702,7 @@ CTFHudPlayerHealth::CTFHudPlayerHealth( Panel *parent, const char *name ) : Edit
 	m_pMilkImage = new ImagePanel( this, "PlayerStatusMilkImage" );
 	m_pGasImage = new ImagePanel( this, "PlayerStatusGasImage" );
 	m_pSlowedImage = new ImagePanel( this, "PlayerStatusSlowed" );
+	m_pNoHealImage = new ImagePanel( this, "PlayerStatusNoHealImage" );	// OWTF2: placed in ApplySchemeSettings
 
 	m_pWheelOfDoomImage = new ImagePanel( this, "PlayerStatus_WheelOfDoom" );
 
@@ -778,6 +782,18 @@ void CTFHudPlayerHealth::ApplySchemeSettings( IScheme *pScheme )
 	m_pBuildingHealthImageBG->SetVisible( m_bBuilding );
 
 	m_pPlayerLevelLabel = dynamic_cast<CExLabel*>( FindChildByName( "PlayerStatusPlayerLevel" ) );
+
+	// OWTF2: the no-heal sign covers the health cross (TF2's .res files don't know it)
+	if ( m_pNoHealImage && m_pHealthImage )
+	{
+		int nX, nY, nWide, nTall;
+		m_pHealthImage->GetBounds( nX, nY, nWide, nTall );
+		m_pNoHealImage->SetBounds( nX, nY, nWide, nTall );
+		m_pNoHealImage->SetZPos( m_pHealthImage->GetZPos() + 5 );
+		m_pNoHealImage->SetShouldScaleImage( true );
+		m_pNoHealImage->SetImage( "owtf2/no_heal" );
+		m_pNoHealImage->SetVisible( false );
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1051,6 +1067,12 @@ void CTFHudPlayerHealth::OnThink()
 			SetPlayerHealthImagePanelVisibility( pPlayer, TF_COND_PASSTIME_PENALTY_DEBUFF,	m_pMarkedForDeathImageSilent,	nXOffset,	Color( 125 - color_fade, 255 - color_fade, 255 - color_fade, 255 ) );
 			SetPlayerHealthImagePanelVisibility( pPlayer, TF_COND_STUNNED,					m_pSlowedImage,					nXOffset,	Color( color_fade, color_fade, 0, 255 ) );
 			SetPlayerHealthImagePanelVisibility( pPlayer, TF_COND_GAS,						m_pGasImage,					nXOffset,	Color( color_fade, color_fade, color_fade, 255 ) );
+
+			// OWTF2: can't be healed right now
+			if ( m_pNoHealImage )
+			{
+				m_pNoHealImage->SetVisible( HealModifiers_IsNoHeal( pPlayer ) );
+			}
 			
 			UpdateHalloweenStatus();
 		}

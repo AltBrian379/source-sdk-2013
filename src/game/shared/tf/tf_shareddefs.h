@@ -218,6 +218,7 @@ enum ETFClass
 	// OWTF2: the mod's hero class. Inserted before Civilian so it counts as a normal,
 	// selectable class (IsValidTFPlayerClass, FOR_EACH_NORMAL_PLAYER_CLASS).
 	TF_CLASS_VETERAN,
+	TF_CLASS_COMBATMED,	// OWTF2: second hero class (Combat Medic)
 	TF_CLASS_CIVILIAN,		// TF_LAST_NORMAL_CLASS
 	TF_CLASS_COUNT_ALL,
 
@@ -524,6 +525,10 @@ enum ETFWeaponType
 	//
 
 	TF_WEAPON_VETERAN_RIFLE,	// OWTF2: Veteran primary (tf_weapon_veteran_rifle)
+	TF_WEAPON_VETERAN_FIELD_RATIONS,	// OWTF2: Veteran secondary, the healing field (tf_weapon_veteran_field_rations)
+	TF_WEAPON_COMBATMED_RIFLE,	// OWTF2: Combat Medic primary, the Biotic Rifle (tf_weapon_combatmed_rifle)
+	TF_WEAPON_COMBATMED_GRENADE,	// OWTF2: Combat Medic secondary, the Biotic Grenade (tf_weapon_combatmed_grenade)
+	TF_WEAPON_COMBATMED_SLEEPDART,	// OWTF2: Combat Medic melee slot, the Sleep Dart (tf_weapon_combatmed_sleepdart)
 
 	TF_WEAPON_COUNT
 };

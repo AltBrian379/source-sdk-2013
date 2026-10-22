@@ -1365,7 +1365,7 @@ void CTFItemDefinition::FilloutSlotUsage( CBitVec<LOADOUT_COUNT> *pBV ) const
 bool CTFItemDefinition::CanBeUsedByAllClasses( void ) const
 {
 	// Right now, Civilian isn't a real class, so we only have 9 classes in this check
-	// OWTF2: was "< (LOADOUT_COUNT-1)". Keep it to the 9 stock classes: no stock item lists Veteran.
+	// OWTF2: was "< (LOADOUT_COUNT-1)". Keep it to the 9 stock classes: no stock item lists the mod's classes.
 	for ( int iClass = 1; iClass <= TF_CLASS_ENGINEER; iClass++ )
 	{
 		if ( !CanBeUsedByClass(iClass) )
@@ -1469,6 +1469,7 @@ static PlayerClassInfo_t gs_PlayerClassData[] =
 	{ "Spy",		"#TF_Class_Name_Spy" },
 	{ "Engineer",	"#TF_Class_Name_Engineer" },
 	{ "Veteran",	"#TF_Class_Name_Veteran" },	// OWTF2: new class
+	{ "CombatMed",	"#TF_Class_Name_CombatMed" },	// OWTF2: new class
 	{ "Invalid",	"" }						// lots of code loops over these classes based on LOADOUT_COUNT, which is wrong, but this allows them to do it safely
 };
 

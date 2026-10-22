@@ -178,12 +178,12 @@ const LoadoutPanelPositioningInstance g_LoadoutPanelPositioning_Engineer =
 	}
 };
 
-// OWTF2: the Veteran carries a single weapon, so only the primary weapon slot is shown
+// OWTF2: the Veteran carries a primary and a secondary (Field Rations), no melee
 const LoadoutPanelPositioningInstance g_LoadoutPanelPositioning_Veteran =
 {
 	{
 		1,	// LOADOUT_POSITION_PRIMARY = 0,
-		0,	// LOADOUT_POSITION_SECONDARY,
+		2,	// LOADOUT_POSITION_SECONDARY,
 		0,	// LOADOUT_POSITION_MELEE,
 		0,	// LOADOUT_POSITION_UTILITY,  // STAGING ONLY
 		0,	// LOADOUT_POSITION_BUILDING,
@@ -217,6 +217,7 @@ const LoadoutPanelPositioningInstance *g_VisibleLoadoutSlotsPerClass[] =
 	&g_LoadoutPanelPositioning_Spy,				// TF_CLASS_SPY
 	&g_LoadoutPanelPositioning_Engineer,		// TF_CLASS_ENGINEER
 	&g_LoadoutPanelPositioning_Veteran,			// TF_CLASS_VETERAN, OWTF2: new class
+	&g_DefaultLoadoutPanelPositioning,			// TF_CLASS_COMBATMED, OWTF2: new class; primary, secondary and melee like stock
 };
 
 COMPILE_TIME_ASSERT( ARRAYSIZE( g_VisibleLoadoutSlotsPerClass ) == TF_LAST_NORMAL_CLASS );

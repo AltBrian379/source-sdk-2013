@@ -1,0 +1,82 @@
+// OWTF2: Veteran secondary, the Field Rations (tf_weapon_veteran_field_rations).
+// Switching to it casts the healing field; it doesn't fire or use ammo.
+// PLACEHOLDER: Jarate model and HUD sprites.
+WeaponData
+{
+	// Attributes Base.
+	"printname"		"#OWTF2_Weapon_VeteranFieldRations"
+	"BuiltRightHanded"	"0"
+	"weight"		"1"
+	"WeaponType"		"secondary"	// Third-person anims come from the item's anim_slot.
+	"ITEM_FLAG_NOITEMPICKUP" 	"1"
+
+	// Attributes TF.
+	"Damage"		"0"
+	"Range"			"0"
+	"BulletsPerShot"	"0"
+	"Spread"		"0"
+	"TimeIdle"		"10.0"
+	"TimeIdleEmpty"		"1.0"
+	"TimeFireDelay"		"0.5"
+	"ProjectileType"	"projectile_none"
+
+	// Ammo & Clip: none, the ability runs on a cooldown.
+	"primary_ammo"		"None"
+	"secondary_ammo"	"None"
+	clip_size		-1
+	default_clip		-1
+
+	// Buckets.
+	"bucket"		"1"
+	"bucket_position"	"0"
+
+	// Animation.
+	"viewmodel"			"models/weapons/c_models/urinejar.mdl"
+	"playermodel"		"models/weapons/c_models/urinejar.mdl"
+	"anim_prefix"	"jar"
+
+	// Weapon Sprite data is loaded by the Client DLL.
+	TextureData
+	{
+		"weapon"
+		{
+				"file"		"sprites/bucket_smg"
+				"x"		"0"
+				"y"		"0"
+				"width"		"200"
+				"height"		"128"
+		}
+		"weapon_s"
+		{
+				"file"		"sprites/bucket_smg"
+				"x"		"0"
+				"y"		"0"
+				"width"		"200"
+				"height"		"128"
+		}
+		"ammo"
+		{
+				"file"		"sprites/a_icons1"
+				"x"			"55"
+				"y"			"60"
+				"width"		"73"
+				"height"	"15"
+		}
+		"crosshair"
+		{
+				"file"		"sprites/crosshairs"
+				"x"			"0"
+				"y"			"0"
+				"width"		"32"
+				"height"	"32"
+		}
+		"autoaim"
+		{
+				"file"		"sprites/crosshairs"
+				"x"			"0"
+				"y"			"48"
+				"width"		"24"
+				"height"	"24"
+		}
+	}
+}

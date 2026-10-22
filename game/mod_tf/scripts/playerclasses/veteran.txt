@@ -12,13 +12,14 @@ PlayerClass
 	"model_hwm"		"models/player/hwm/sniper.mdl"
 	"model_hands"	"models/weapons/c_models/c_sniper_arms.mdl"
 	"localize_name"	"TF_Class_Name_Veteran"
-	"speed_max"		"300"
-	"health_max"	"125"
+	"speed_max"		"280"	// OWTF2: ported heroes move at the Demoman's speed
+	"health_max"	"175"
 	"armor_max"		"0"
 
 	// Ultimate (src/game/shared/tf/tf_ultimate.h). Approximately the source hero's values; tune here.
 	"ultimate_cost"		"2310"	// points to fill (passive 5/s, 1 per damage, 1 per heal)
 	"ultimate_duration"	"6"		// seconds it drains over once used; 0 = spent instantly
+	"ultimate_cast_time"	"1.2"	// seconds from the key to the effect; nothing drains meanwhile
 
 	// Weapons. The real weapon comes from the item loadout (items_owtf2.txt, defindex 60000);
 	// these legacy entries are unused.
@@ -33,7 +34,7 @@ PlayerClass
 
 	AmmoMax
 	{
-		"tf_ammo_primary"	"75"	// reserve for the rifle (SMG placeholder: 25 clip + 75)
+		"tf_ammo_primary"	"90"	// reserve for the rifle (30-round clip + 90)
 		"tf_ammo_secondary"	"0"
 		"tf_ammo_metal"		"0"
 		"tf_ammo_grenades1"	"0"

@@ -1,6 +1,7 @@
 // OWTF2: Veteran primary weapon (tf_weapon_veteran_rifle).
 // PLACEHOLDER: copy of TF2's tf_weapon_smg script (SMG stats, model and sounds).
 // Changed: printname, WeaponType primary, primary ammo, bucket 0.
+// Veteran stats: base damage 10, no spread, 30-round clip, 9 shots/s, 1.5 s reload (reserve 90: AmmoMax in veteran.txt).
 WeaponData
 {
 	// Attributes Base.
@@ -12,13 +13,14 @@ WeaponData
 	"HasTeamSkins_Viewmodel"			"1"	
 		
 	// Attributes TF.
-	"Damage"		"8"
+	"Damage"		"14"	// OWTF2: SMG: 8
 	"Range"			"8192"
 	"BulletsPerShot"	"1"
-	"Spread"		"0.025"
+	"Spread"		"0"	// OWTF2: no spread (SMG: 0.025)
 	"TimeIdle"		"10.0"
 	"TimeIdleEmpty"		"1.0"
-	"TimeFireDelay"		"0.1"
+	"TimeFireDelay"		"0.111111"	// OWTF2: 9 shots/s (SMG: 0.1); CTFVeteranRifle::PrimaryAttack keeps it exact
+	"TimeReload"		"1.5"	// OWTF2: used by CTFVeteranRifle::DefaultReload instead of the animation length
 	"ProjectileType"	"projectile_bullet"
 	"BrassModel"		"models/weapons/shells/shell_pistol.mdl"
 	"UseRapidFireCrits"	"1"
@@ -26,8 +28,8 @@ WeaponData
 	// Ammo & Clip.
 	"primary_ammo"		"TF_AMMO_PRIMARY"
 	"secondary_ammo"	"None"
-	clip_size		25
-	default_clip		25
+	clip_size		30
+	default_clip		30
 
 	// Buckets.
 	"bucket"		"0"

@@ -365,6 +365,9 @@ class CTFWeaponBase : public CBaseCombatWeapon, public IHasOwner, public IHasGen
 	bool IsCurrentAttackARandomCrit() const { return m_bCurrentAttackIsCrit && m_bCurrentCritIsRandom; }
 	bool IsCurrentAttackDuringDemoCharge() const { return m_bCurrentAttackIsDuringDemoCharge; }
 	virtual ETFDmgCustom GetPenetrateType() const;
+	// OWTF2: shots that hit (and heal) teammates; their owner lag-compensates teammates too
+	// (CTFPlayer::WantsLagCompensationOnEntity). See tf_teammate_trace.h.
+	virtual bool	HitsTeammates( void ) const { return false; }
 	virtual void GetProjectileFireSetup( CTFPlayer *pPlayer, Vector vecOffset, Vector *vecSrc, QAngle *angForward, bool bHitTeammates = true, float flEndDist = 2000.f );
 	virtual QAngle GetSpreadAngles( void );
 	float GetLastPrimaryAttackTime( void ) const { return m_flLastPrimaryAttackTime; }

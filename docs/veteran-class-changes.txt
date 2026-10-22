@@ -156,7 +156,7 @@ Left alone on purpose
 4. Game content (game/mod_tf)
 -----------------------------
   scripts/playerclasses/veteran.txt
-    The class definition: model, hands, health 125, speed 300, death sounds.
+    The class definition: model, hands, health 175 (was 125, the Sniper's; changed on request), speed 300, death sounds.
     TF2 ships these files encrypted (.ctx), but the game reads a plain .txt
     first if one exists. I decrypted the shipped sniper.ctx with the SDK's own
     decryption code, only to copy the Sniper's real values. The values are
@@ -564,3 +564,490 @@ Known issues (kept for later; functionality first)
     test shot took him from 125 to 118).
   - Placeholder launch sound (Building_Sentrygun.FireRocket) and third-person
     gesture (the primary attack's).
+
+Healing field: the Field Rations (secondary)
+============================================
+
+Switching to the Veteran's secondary is the ability's input. The weapon,
+tf_weapon_veteran_field_rations (CTFVeteranFieldRations, item 60001, ID
+TF_WEAPON_VETERAN_FIELD_RATIONS), never fires:
+  - Deploy starts a cast (tf_veteran_field_cast_time, 0.6 s) and ends Sprint.
+    CanHolster is false during the cast, so it can't be cancelled by switching.
+    A forced holster (death, class change) cancels it with no cooldown.
+  - At the end of the cast (checked in ItemPostFrame and ItemBusyFrame, since the
+    deploy delay can outlast the cast) the server places the field, the cooldown
+    starts (tf_veteran_field_cooldown, 15 s, the source hero's) and the player
+    switches back to the primary (bucket 0).
+  - CanBeSelected and CanDeploy are false on cooldown: the weapon can't be picked
+    from the number keys or the mouse wheel.
+  - The cast and ready times are networked, predicted weapon vars, like the helix
+    cooldown. Both reset on spawn (Veteran_ResetAbilities).
+  - HUD: a second item effect meter (label FIELD, recharge beep).
+    HudItemEffectMeter_VeteranField.res is TF2's HudItemEffectMeter.res plus an
+    x_offset of 50, so it sits beside the HELIX meter instead of on top of it.
+
+The field, tf_veteran_healing_field (CTFVeteranHealingField, shared file with server
+and client halves):
+  - Placement: tf_veteran_field_offset (16) units in front of the player's feet,
+    along the view yaw. That point is inside the player's own hull, so it can't be
+    in a wall. A trace goes straight down from a step height (18) above it; the
+    field sits where it hits (MASK_SOLID, players ignored, so playerclip is skipped).
+    Cast in the air or at a ledge, it lands on the ground below.
+  - No collision (SOLID_NONE), model models/items/medkit_small.mdl.
+  - Healing, copied from CObjectDispenser: every 0.1 s it checks each player against
+    a box of +-tf_veteran_field_radius (64, the dispenser's trigger) around a center
+    tf_veteran_field_center_height (32) above the ground. A player counts as inside
+    when their bounding box touches it, as with the dispenser's touch trigger. Same
+    line-of-sight mask, team rule (enemy spies disguised as a teammate are healed),
+    and purgatory rule. Healing goes through CTFPlayerShared::Heal as a dispenser
+    heal: a constant tf_veteran_field_heal_rate (10 HP/s, level 1) with no overheal,
+    credited to the Veteran.
+  - Lasts tf_veteran_field_duration (5 s), then removes itself. It also goes away if
+    its owner leaves. On removal it takes itself off every player's healer list.
+  - Client: the Quick-Fix ÜberCharge ring (medic_megaheal_red/blue) on the floor,
+    and a dispenser heal beam (dispenser_heal_red/blue) from the pack to each player
+    being healed. The server networks who is being healed as a bitmask of player
+    slots (m_nHealedPlayerBits).
+
+Other changes:
+  - tf_shareddefs.h/.cpp: TF_WEAPON_VETERAN_FIELD_RATIONS, name and damage rows.
+  - items_owtf2.txt: item 60001 (secondary, baseitem, anim_slot item1, Jarate model).
+  - scripts/tf_weapon_veteran_field_rations.txt: no ammo, bucket 1.
+  - class_loadout_panel.cpp: the Veteran's loadout page shows the secondary slot.
+  - mod_tf_english.txt: FIELD label, weapon name, type and description.
+  - client_tf.vpc and server_tf.vpc: the four new source files.
+
+Tested in game (itemtest, RED and BLU puppet bots, VScript test, removed afterwards)
+------------------------------------------------------------------------------------
+  - slot2 starts the cast; slot1 during the cast is ignored; back on the rifle at 0.6 s.
+  - Field 16.0 units ahead, on the floor, not solid.
+  - Veteran 50 -> 100 and RED soldier 100 -> 150 over 5 s (10 HP/s). The BLU soldier
+    standing in it: not healed. Gone after 5 s.
+  - slot2 on cooldown: ignored. Cast while sprinting: Sprint ends.
+  - Cast while airborne (102 units up when it ended): placed on the floor below.
+  - Screenshots: red ring on the floor, heal effects on the teammate, FIELD meter
+    beside HELIX.
+
+Rifle headshots: minicrits
+==========================
+
+Bullets from the Veteran's rifle that hit the head minicrit. Only this weapon.
+
+How the hit is registered: the same way the Ambassador's is. FireBullets traces
+against hitboxes, and CTFPlayer::TraceAttack stores the hit hitbox group on the
+victim (SetLastHitGroup) for every bullet. The Ambassador adds DMG_USE_HITLOCATIONS,
+which makes TraceAttack turn a head hit into a full crit; the rifle doesn't use that
+flag. Its own accuracy timer and 1200-unit range limit aren't copied either.
+
+How the minicrit is applied: one case (marked OWTF2) in the minicrit chain of
+CTFGameRules::ApplyOnDamageModifyRules (tf_gamerules.cpp), next to the Sniper Rifle +
+Jarate headshot minicrit: weapon is TF_WEAPON_VETERAN_RIFLE, the inflictor is the
+player (a hitscan bullet), and the victim's LastHitGroup is HITGROUP_HEAD. Everyone
+sees the minicrit effect. Normal TF2 minicrit rules apply: x1.35, no long-range
+falloff penalty, and a hit that's already a full crit stays a full crit.
+
+The inflictor check matters: helix rockets share the rifle's weapon ID, so their
+damage type is also DMG_BULLET. Without it, a rocket fired right after a headshot
+read the stale head hitgroup and minicritted.
+
+Tested in game (itemtest, BLU puppet soldier 255 units away, random crits off,
+damage spread off, VScript test, removed afterwards)
+  - Body shots: 11. Head shots: 15 (11 x 1.35). Repeated twice.
+  - Helix rocket after a body bullet: 135. After a head bullet: 135.
+
+Helix rockets: blast damage
+===========================
+
+CTFBaseRocket::GetDamageType looks the damage type up by weapon ID, and the helix
+rocket's weapon ID is the rifle's, so the rockets dealt DMG_BULLET | DMG_USEDISTANCEMOD:
+bullet resistances applied to them and blast resistances didn't.
+CTFProjectile_HelixRocket::GetDamageType now swaps DMG_BULLET for DMG_BLAST. The
+distance modifier and the crit flag are unchanged, so the damage numbers are the same.
+
+Tested in game (BLU puppet soldier 250 units away, random crits and damage spread off):
+  - Helix: 135 with no resistance, 68 with 50% blast resistance, 135 with 50% bullet
+    resistance. Rifle bullet: 11, and 5 with 50% bullet resistance.
+
+Rifle stats, recoil and falloff
+================================
+
+Weapon script (tf_weapon_veteran_rifle.txt): Spread 0, clip_size/default_clip 30,
+TimeFireDelay 0.111111 (9 shots/s), TimeReload 1.5. veteran.txt: tf_ammo_primary 90.
+
+Code (tf_weapon_veteran_rifle.cpp/.h):
+  - PrimaryAttack: while the trigger is held, the next shot is scheduled from the
+    previous shot's due time, not the current tick. Measured: 8.95-9.03 shots/s.
+  - DefaultReload: reload time from the script's TimeReload through SetReloadTimer
+    (reload-speed attributes still apply), animation stretched to fit. The old
+    Panic Attack health-based reload code is still in SetReloadTimer, commented out;
+    the playback-rate scaling it relied on is live. Measured: 1.53 s from the key.
+  - GetDistanceModCenter: replaces TF2's distance-mod center for the rifle's bullets
+    (tf_gamerules.cpp, OWTF2 hook right after flCenter is computed; helix rockets keep
+    TF2's curve). Center 1 -> 0.5 from 0 to tf_veteran_rifle_falloff_start (512), 0.5 ->
+    0 from there to tf_veteran_rifle_falloff_end (640). Measured with base 8: 11 at
+    256, 8 at 512, 5 at 576, 4 at 640 and 700.
+  - Recoil: client side (c_tf_player.cpp, OWTF2 call in C_TFPlayer::CreateMove, off
+    during taunts, karts and frozen input). Shots counted per trigger hold
+    (m_iBurstShots, networked and predicted); the kick is queued only the first time
+    a shot is predicted. From shot 6 each shot climbs 0.098 degrees. The recoil still
+    owed is reduced by pulling down (not by moving up or sideways). After 0.15 s
+    without a shot it recovers at 15 degrees/s (was 5 when measured below) while there's no vertical input.
+    Measured: no climb for shots 1-6, then 0.098 per shot, 2.45 for a full clip;
+    recovery back to the starting aim in about 0.5 s, unaffected by turning
+    sideways; pulling down 1 degree paused recovery, then only the remaining 1.45
+    recovered, ending exactly at the starting aim.
+
+Tuning (not retested)
+=====================
+  - Recoil climb doubled: tf_veteran_rifle_recoil_climb 0.098 -> 0.196 (4.9 degrees per full clip).
+  - Rifle base damage 8 -> 10 (weapon script "Damage"). Earlier measurements above used 8.
+  - Rifle base damage 10 -> 14 (weapon script "Damage").
+  - Helix rocket base damage 100 -> 60 (tf_veteran_helix_damage). Earlier measurements above used 100.
+
+Tuning and fixes
+================
+  - Healing field: tf_veteran_field_radius 64 -> 128 (twice the dispenser's; the box grows
+    vertically too). tf_veteran_field_heal_rate 10 -> 15 (level 2 dispenser).
+    Tested: 15 HP/s; healed at 140 units from the field, not at 200.
+  - Helix rockets: model scale 0.5 (tf_veteran_helix_scale; the trail isn't scaled),
+    speed 1980 (tf_veteran_helix_speed, the Direct Hit's 1100 x 1.8; set in
+    CTFProjectile_HelixRocket::Create), launch sound at 0.75 of its script volume
+    (tf_veteran_helix_sound_volume, EmitSound_t built from the sound's parameters).
+    Tested: speed 1980, scale 0.5. Volume not measured.
+  - Recoil climb 0.196 -> 0.392 (4x the first value).
+  - Reload cancelling: TF2 lets firing cancel a clip reload when the clip isn't empty
+    (CTFWeaponBase::ItemBusyFrame), once m_flReloadPriorNextFire passes. The rifle's
+    fixed reload time called SetReloadTimer a second time, which overwrote that with
+    the first reload timer's end, so the reload couldn't be cancelled. It now keeps
+    the base value. Tested: clip 20, reload, firing 0.4 s in fired (clip 17) and the
+    reload stopped.
+  - Empty rifle: CTFVeteranRifle::HasAnyAmmo returns true. Without it, an empty rifle
+    auto-switched to the next weapon (ReloadOrSwitchWeapons), which is the Field Rations
+    and casts the field, couldn't be switched to (Weapon_CanSwitchTo) or drawn
+    (DefaultDeploy). Tested: clip and reserve 0, still on the rifle after 1 s, helix
+    fires, Field Rations casts and switches back to the empty rifle.
+
+Helix rocket trail at half size
+===============================
+Source 2013 particle effects can't be scaled at runtime, so the trail is a resized copy.
+  - particles/rockettrail.pcf (tf2_misc_dir.vpk) converted to text with TF2's dmxconvert.
+    rockettrail and its two children (rockettrail_burst, rockettrail_fire) copied as
+    helix_rockettrail, helix_rockettrail_burst and helix_rockettrail_fire, with new element
+    ids and every size value halved: base radius (10 -> 5, 5 -> 2.5), random radius
+    (1-2 -> 0.5-1), spawn sphere distances, start offset (10 -> 5), drift and spread
+    speeds. Radius-scale multipliers, lifetimes, colours and emission rates unchanged.
+    Converted back to binary: game/mod_tf/particles/helix_rockettrail.pcf.
+  - game/mod_tf/particles/particles_manifest.txt: TF2's manifest plus that file (the
+    mod's manifest replaces TF2's, so it has to list everything).
+  - C_TFProjectile_HelixRocket::GetTrailParticleName returns helix_rockettrail; the
+    server precaches it.
+  - Tested: a helix rocket and a stock rocket fired side by side at the same distance
+    from the camera: the helix trail is about half as thick. No particle errors.
+
+The Veteran's ultimate
+======================
+Ultimate system (tf_ultimate.cpp/.h, tf_classdata, CTFPlayerShared):
+  - New per-class "ultimate_cast_time" (Veteran 1.2). Using the ultimate makes it active
+    and sets m_flUltimateCastEndTime (networked and predicted). Nothing drains during the
+    cast; Ultimate_Think runs the cast-end hook once it's over (m_bUltimateCastPending),
+    then drains. Dying mid-cast ends it.
+  - Ultimate_IsCasting / Ultimate_IsEffectActive for the hero code.
+  - Per-class hooks: can use, cast start, cast end, end.
+Veteran (tf_veteran_abilities.cpp, tf_weapon_veteran_rifle.cpp, tf_weapon_veteran_field_rations.cpp):
+  - Can't be used while the Field Rations is casting.
+  - Cast start: Sprint off; the voice line (vo/sniper_battlecry05.mp3, placeholder) to all
+    players within 2048 units, SNDLVL_NONE (no falloff, through walls), CHAN_VOICE2,
+    pitch 85.
+  - During the cast: the rifle skips ItemPostFrame and ItemBusyFrame (no fire, helix,
+    reload; a reload in progress is aborted), CanHolster is false, the Field Rations can't
+    deploy or be selected, Sprint can't be toggled.
+  - Cast end: free clip refill.
+  - Effect: 0.5 s reload; auto-aim on bullets (FireBullet override). Target: nearest
+    living enemy player within 2048 units, inside a 45-degree cone (full angle), with line
+    of sight from the shoot position to the body center, head or legs (MASK_SHOT |
+    CONTENTS_GRATE, the sentry's). Same spy rules as CObjectSentrygun::ValidTargetPlayer.
+    No buildings. Server: chosen under lag compensation, which is then finished before
+    FX_FireBullets starts its own (they can't nest). The aimed angles reach the damage
+    trace, the predicted tracers and the tracers sent to other players. Helix not aimed.
+Tested in game (itemtest, two BLU puppet soldiers, random crits off):
+  - During the cast: fire, helix, reload, slot2 and sprint all ignored (clip stayed 20,
+    no rocket, still the rifle, sprint off).
+  - 1.3 s after Q: clip 30, reserve unchanged.
+  - Target 15 degrees off at 500 units: hit (200 -> 190). 30 degrees off: missed. 10
+    degrees off at 2200 units: missed. Two in the cone (400 and 700 units): the nearer
+    one hit.
+  - Helix fired with a target 15 degrees off flew 0.9 degrees from the crosshair (its
+    normal launch offset), so it isn't aimed.
+  - Ultimate reload: 0.54 s. The ultimate ended 7.22 s after Q (1.2 + 6).
+  - snd_showstart: vo\sniper_battlecry05.mp3, channel 7, 0 dB, volume 1.0. Pitch isn't
+    printed there and wasn't checked by ear.
+Fix: movement jitter while the ultimate charge changed
+- src/game/shared/tf/tf_player_shared.cpp: removed the DEFINE_PRED_FIELD entries for
+  m_flUltimateCharge, m_bUltimateActive and m_flUltimateCastEndTime. Only the server
+  writes them, and the charge changes every tick (passive charge, drain), so as
+  prediction fields every network update was a prediction error and a "Full latch
+  reset" (full re-prediction of the player).
+Tested in game (ctf_2fort, cl_showerror 2): before, an m_flUltimateCharge error every
+3-4 ticks during the ultimate's drain; after, none while walking or draining.
+
+Helix rockets: cast time, reload interrupt, cancelled by the ultimate
+- src/game/shared/tf/tf_weapon_veteran_rifle.cpp/.h: tf_veteran_helix_cast_time (0.5 s).
+  A launch sets m_flHelixCastEndTime (networked, predicted) and pushes the next primary
+  attack to it; ItemPostFrame returns early while it runs (no firing, reloading or auto
+  reload) and PrimaryAttack is guarded (the base ItemPostFrame can call it in the same
+  frame as SecondaryAttack). ItemBusyFrame: +attack2 during a reload drops the reload and
+  launches (a reload only gets busy frames, where alt-fire did nothing before).
+  CancelHelixCast clears the cast and the pushed-out fire time.
+- src/game/shared/tf/tf_veteran_abilities.cpp: Veteran_OnUltimateStart cancels the cast.
+Tested in game (itemtest, cooldown lowered to 0.1 s):
+  - Helix 0.6 s into a reload, fire held: reload dropped (clip stayed 20), cast end
+    0.49 s after the launch tick, first shot 0.51 s after the launch.
+  - Helix during a reload, then Q 0.1 s later: cast end cleared to 0, next fire time
+    back to now (the ultimate's own 1.2 s cast then blocks firing).
+
+Ultimate rifle has no falloff; helix damage 85; field healing charge checked
+- src/game/shared/tf/tf_gamerules.cpp: (includes tf_ultimate.h) after the rifle's
+  GetDistanceModCenter, the center is kept at 0.5 or above while the attacker's ultimate
+  effect is on: no long-range falloff, the close-range bonus stays.
+- src/game/shared/tf/tf_weapon_veteran_rifle.cpp: tf_veteran_helix_damage 60 -> 85.
+Tested in game (itemtest, player_hurt events, tf_damage_disablespread 1):
+  - Rifle at 700 units: 7 without the ultimate, 14 during it. At 256 during it: 19.
+  - Helix direct hit at 512 units: 85.
+  - Healing field: 1 ultimate point per HP healed (no code change). A teammate healed
+    50 -> 125 gave +75; the Veteran healed 60 -> 135 gave +75.
+
+HUD: cooldown meters above the ultimate meter; ported heroes at the Demoman's speed
+- src/game/client/tf/tf_hud_itemeffectmeter.cpp/.h: CItemEffectMeterManager::
+  PositionAboveUltimateMeter lines the visible item effect meters up in a row on top of
+  the ultimate meter, right-aligned with its background, first declared meter on the
+  right. When the ultimate meter hides, the meters reload their .res positions.
+  GetRowTopAboveUltimateMeter gives the row's top.
+- src/game/client/tf/tf_hud_ammostatus.cpp: the ammo counter sits on top of that row.
+- game/mod_tf/scripts/playerclasses/veteran.txt: speed_max 300 -> 280 (Demoman).
+Tested in game: FIELD and HELIX in a row on the ultimate meter, ammo above, no overlap;
+m_flMaxspeed 280.
+
+
+7. Second hero class: Combat Medic (TF_CLASS_COMBATMED = 11)
+-------------------------------------------------------------
+Plan: docs/combatmed-plan.txt. Inserted after Veteran, so Civilian is now 12, the class
+count 13 and Random 14. Same audit as for Veteran: every table with a Veteran row got a
+Combat Medic row (Medic placeholders: model, bot models, gibs, icons, portraits, menu art
+and music, PASS Time tuning, eye height 75, model panel zoom 30), and LOADOUT_COUNT went
+to (12+1). Raw name "combatmed", non-localized "CombatMed", localized
+#TF_Class_Name_CombatMed ("Combat Medic"), tf_tournament_classlimit_combatmed.
+- tf_classmenu.cpp: GetPlaceholderContentClass maps the mod's classes to the stock class
+  whose art and music they borrow (Veteran -> Sniper, Combat Medic -> Medic).
+- ClassSelection.res / ClassSelection_SC.res: "combatmed" button (select 11) and
+  numCombatMed label at c258; Random moved to c320 (select 14).
+- CharInfoLoadoutSubPanel.res: "combatmed" button (the panel lays the buttons out itself).
+- Loadout: primary, secondary and melee like stock (g_DefaultLoadoutPanelPositioning;
+  item_quickswitch.cpp slots 1-3). No items yet.
+- scripts/playerclasses/combatmed.txt: Medic model and sounds, 175 HP, speed 280,
+  no ultimate until Nano Boost (ultimate_cost 0), no ammo.
+- mod_tf_english.txt: class name, Tip_11 and ClassTips_11 (a work-in-progress note).
+Left alone: workshop tables kClassFolders / kClassTags (item_import.cpp,
+published_files.cpp) have no rows for either mod class; workshop import isn't used.
+Tested in game: the class menu shows the button with the Medic art next to Veteran, and
+the tip. joinclass combatmed spawns class 11 with the Medic model, 175/175 HP,
+m_flMaxspeed 280 after the spawn freeze, no weapons.
+
+
+8. Combat Medic phase 1: shared hero systems
+--------------------------------------------
+New files (shared unless noted; listed in client_tf.vpc / server_tf.vpc):
+- tf_weapon_cast_ability.cpp/.h: CTFCastAbilityWeapon, the switch -> cast -> effect ->
+  cooldown -> back-to-primary logic that used to live in the Field Rations. Networks the
+  cast end and ready times (predicted). Hooks: GetCastTime, GetCooldown, OnCastFinished,
+  CanUseNow, IsInstantSwitch (no draw time), GetCastActivity, OnCastStarted. The hooks
+  aren't pure virtual because the networked base class needs a client factory.
+- tf_weapon_veteran_field_rations.cpp/.h: now a CTFCastAbilityWeapon subclass (cast time,
+  cooldown, stop Sprint on start, place the field on finish). Same behaviour.
+- tf_heal_modifiers.cpp/.h: no-heal and heal boost windows; tf_heal_modifier_test.
+- tf_teammate_trace.h: CTraceFilterSkipFullHealthTeammates, OWTF2_IsHurtTeammate.
+- server/tf/tf_damage_over_time.cpp/.h: damage over time (CAutoGameSystemPerFrame);
+  tf_damage_over_time_test and tf_defensebuff_test.
+Valve files:
+- tf_player_shared.h/.cpp: m_flNoHealEndTime, m_flHealBoostEndTime (DT_TFPlayerShared, no
+  pred fields), server-only m_flHealBoostScale and m_flDefenseBuffResistance; cleared on
+  spawn (HealModifiers_Clear) / when a defense buff is removed (OnRemoveDefenseBuff). The
+  healer-list tick scales this frame's healing by the heal modifiers.
+- tf_player.cpp: TakeHealth applies the heal modifiers unless DMG_IGNORE_DEBUFFS (the tick
+  and regen apply them themselves); class regen scales its accumulator;
+  WantsLagCompensationOnEntity rewinds teammates when the active weapon HitsTeammates().
+- tf_weaponbase.h: virtual CTFWeaponBase::HitsTeammates() (false).
+- tf_gamerules.cpp: the defense buff uses the per-application resistance when one is set.
+- tf_ultimate.cpp/.h: Ultimate_InterruptCast, tf_ultimate_interrupt_test.
+Tested in game (itemtest, Veteran):
+  - Damage over time 70 over 0.6 s: hits 12, 12, 12, 13, 12, 9 about 0.1 s apart (70).
+  - Defense buff: 100 damage -> 65 with TF2's resistance; 40 -> 20 with 0.5.
+  - Ultimate interrupted 0.5 s into its cast: charge 2310 -> 0, not active.
+  - Field Rations: on the Field Rations 0.3 s after slot2, field placed and back on the
+    rifle by 0.9 s.
+  - Healing field under no-heal: health and charge unchanged for 1.5 s; then +13 in 1 s;
+    with heal boost x2, +59 in 2 s (about 30/s for the 15/s field); charge followed the
+    healing done.
+  - Small health pack: under no-heal not used (health stayed 25); after it, +35; under heal
+    boost x2, +70.
+Not tested yet: the teammate trace filter and teammate lag compensation (need the Biotic
+Rifle), IsInstantSwitch and GetCastActivity (need the Biotic Grenade).
+
+
+9. Combat Medic phase 2: the Biotic Rifle
+-----------------------------------------
+New files (shared; listed in both vpc files):
+- tf_combatmed_abilities.cpp/.h: class-wide hooks. CombatMed_GetMaxSpeedMultiplier
+  (scoped speed), called from CTFPlayer::TeamFortress_CalculateMaxSpeed.
+- tf_weapon_combatmed_rifle.cpp/.h: CTFCombatMedRifle (CTFWeaponBaseGun). Hold-to-scope,
+  projectile or hitscan, ApplyBioticHit, fixed reload time, reload when empty even with
+  MOUSE2 held, HitsTeammates() true, no random crits.
+- tf_projectile_biotic_round.cpp/.h: CTFProjectile_BioticRound (CTFBaseProjectile, moved
+  by its own swept trace each tick) and its client temp-entity effect.
+Content: scripts/tf_weapon_combatmed_rifle.txt, item 60002 in items_owtf2.txt,
+combatmed.txt reserve 45, localization (OWTF2_Weapon_CombatMedRifle*).
+Valve files:
+- tf_shareddefs.h/.cpp: TF_WEAPON_COMBATMED_RIFLE, name row, DMG_BULLET (no distance mod).
+- tf_player_shared.cpp: the scoped speed multiplier.
+- tf_hud_scope.cpp, tf_weapon_sniperrifle.cpp: the scope charge meter and the charge
+  material proxy used assert_cast to a sniper rifle on any zoomed weapon; now dynamic_cast
+  and skip other weapons.
+- server/tf/tf_damage_over_time.cpp/.h: HealOverTime_Apply (healing over time).
+Also: tf_projectile_helix_rocket.cpp, tf_veteran_helix_speed 1980 -> 1968 (Overwatch's
+50 m/s at 39.37 HU/m).
+Tested in game (itemtest; a standing enemy Heavy and teammate Heavy):
+  - Unscoped at the enemy, 700 units: 9, 9, 9, 10, 9, 6 (52) over about 0.5 s.
+  - At 128 units: also 52 (flat, no close-range bonus).
+  - Through a full-health teammate: teammate untouched, enemy -52.
+  - At a hurt teammate (100): healed 52 (player_healed events), enemy untouched.
+  - Scoped (hitscan) through a full-health teammate: enemy -52; at a hurt teammate: +52.
+  - Scoped max speed 98 (280 x 0.35), 280 again unscoped.
+  - Last round while scoped, MOUSE2 held: reloads and unscopes; clip 15, reserve 44 -> 29;
+    stays unscoped until MOUSE2 is released and pressed again.
+  - Reload 1.5 s (2.3 s from a shot: the 0.8 s fire delay comes first).
+Not observable with standing bots: teammate lag compensation.
+
+
+10. Combat Medic phase 3: the Biotic Grenade
+--------------------------------------------
+New files: shared/tf/tf_weapon_combatmed_grenade.cpp/.h (CTFCombatMedGrenade, a cast
+ability weapon: instant switch, ACT_THROWABLE_VM_FIRE, throw on cast end);
+server/tf/tf_projectile_biotic_grenade.cpp/.h (projectile and burst). Listed in the vpc files.
+Content: scripts/tf_weapon_combatmed_grenade.txt, item 60003, localization
+(OWTF2_Weapon_CombatMedGrenade*, OWTF2_BioticGrenade "GRENADE").
+Valve files:
+- tf_shareddefs.h/.cpp: TF_WEAPON_COMBATMED_GRENADE, name row, DMG_GENERIC.
+- tf_hud_itemeffectmeter.cpp: the GRENADE cooldown meter for TF_CLASS_COMBATMED.
+- c_tf_player.cpp: CProxyUrineLevel tints players purple under no-heal and green under heal
+  boost (about 20%).
+- tf_player_shared.cpp: CTFPlayerShared::Spawn calls CombatMed_ResetAbilities.
+Tested in game (itemtest; enemy Heavy and teammate Heavy at 100 HP side by side):
+  - On the grenade 0.06 s after pressing 2 (instant switch); back on the rifle with the
+    grenade thrown by 0.5 s.
+  - Burst: enemy -52, teammate +52; enemy no-heal and teammate heal boost for 3 s.
+  - Rifle on the boosted teammate: +76 (52 x 1.5 = 78; rounding).
+  - Health pack on the no-heal enemy: not used during the window; picked up when it ended.
+  - Thrown at own feet after taking 100: 75 -> 127, and boosted.
+  - Tints visible in screenshots: purple on the enemy, green on the teammate.
+
+
+11. Combat Medic phase 4: the Sleep Dart
+----------------------------------------
+New files: shared/tf/tf_weapon_combatmed_sleepdart.cpp/.h (CTFCombatMedSleepDart);
+server/tf/tf_projectile_sleep_dart.cpp/.h (projectile). Listed in the vpc files.
+Content: scripts/tf_weapon_combatmed_sleepdart.txt, item 60004 (melee slot),
+resource/ui/HudItemEffectMeter_CombatMedSleep.res, localization (OWTF2_Weapon_CombatMedSleepDart*,
+OWTF2_SleepDart "SLEEP").
+Changed:
+- tf_weapon_cast_ability.cpp/.h: optional recovery after the effect (GetRecoveryTime,
+  m_flReturnTime networked and predicted); still can't switch away during it.
+- tf_combatmed_abilities.cpp/.h: SHIFT input, sleep (CombatMed_PutToSleep, _IsAsleep,
+  _OnDamageTaken, _SleepThink), tf_combatmed_sleep_duration; dart cooldown reset on spawn.
+Valve files:
+- tf_shareddefs.h/.cpp: TF_WEAPON_COMBATMED_SLEEPDART, name row, DMG_GENERIC.
+- tf_player_shared.h/.cpp: server-only m_flSleepEndTime (cleared on spawn);
+  CTFPlayer::ItemPostFrame calls CombatMed_AbilityPostFrame; ConditionGameRulesThink calls
+  CombatMed_SleepThink.
+- tf_player.cpp: OnTakeDamage_Alive calls CombatMed_OnDamageTaken when health was taken.
+- tf_hud_itemeffectmeter.cpp: the SLEEP meter.
+Tested in game (itemtest; enemy Veteran bot, teammate Heavy):
+  - SHIFT: on the dart at once; enemy hit (-3) and asleep; on the dart during recovery; back
+    on the rifle 0.6 s after the hit.
+  - A rifle hit on the sleeper woke them (damage over time).
+  - Through the teammate: teammate untouched; enemy asleep from 15.99 to 21.0 (5 s).
+    (Before CombatMed_SleepThink: 6.5 s with a 5 s stun, about 4.1 s with a 3.5 s one.)
+  - Key 3 at an enemy whose ultimate was casting: ultimate ended, charge 2310 -> 0, asleep.
+  - ÜberCharged enemy: no damage, no sleep.
+  - SHIFT during the grenade's cast: the grenade was thrown, no dart, back on the rifle.
+  - HUD: SLEEP and GRENADE meters side by side.
+
+
+12. Combat Medic phase 5: Nano Boost (the ultimate)
+---------------------------------------------------
+- combatmed.txt: ultimate_cost 2300 (Ana's), duration 0 (instant), cast 0.
+- tf_combatmed_abilities.cpp/.h: CombatMed_FindNanoTarget (teammate under the crosshair,
+  else the closest to it in tf_combatmed_nano_aim_cone; range 1576, line of sight),
+  CombatMed_CanUseUltimate (no target: not used, charge kept), CombatMed_OnUltimateCastEnd
+  (heal 175, then TF_COND_ENERGY_BUFF and TF_COND_DEFENSEBUFF_NO_CRIT_BLOCK at
+  tf_combatmed_nano_resistance 0.35 for 8 s), CombatMed_IsNanoBoosted.
+- tf_ultimate.cpp: dispatch for TF_CLASS_COMBATMED.
+- tf_heal_modifiers.cpp/.h: HealModifiers_CreditHealing (heal credit + player_healed), now
+  used by healing over time, the grenade and Nano Boost.
+Valve files:
+- tf_player_shared.h/.cpp: m_flNanoBoostEndTime (DT_TFPlayerShared, server-written, no pred
+  field; cleared on spawn); TeamFortress_CalculateMaxSpeed skips the Heavy's energy-buff
+  (Buffalo Steak) speed bonus while Nano-boosted (set by the user).
+Tested in game (itemtest; teammate Heavy at 100 HP):
+  - No teammate targetable: not used, charge stays 2300.
+  - At the teammate: healed +175 (100 -> 275), energy buff and defense buff for 8 s, charge
+    2300 -> 0, teammate max speed stays 230.
+  - 100 damage on the boosted teammate: 65. After 8 s: buffs gone, 100 damage -> 100.
+  - Screenshot: the Crit-a-Cola glow on the weapon, the Battalion's ring at the feet; the
+    ULTIMATE meter with SLEEP and GRENADE above it.
+
+
+13. Combat Medic phase 6 (details, first pass)
+----------------------------------------------
+- tf_hud_playerstatus.cpp/.h: m_pNoHealImage, the spawn-room "no entry" sign over the health
+  cross while no-heal is on; materials/vgui/owtf2/no_heal.vmt (HUD copy of overlays/no_entry).
+- Biotic Rifle: Crusader's Crossbow model (script, item 60002), Sydney Sleeper fire sound.
+  Sleep Dart: Hitman's Heatmaker fire sound (script SoundData, WeaponSound on fire).
+- Biotic Grenade: third-person ACT_MP_THROW gesture; burst healing never boosted (no stacking,
+  a newer boost or no-heal replaces the old one); enemy buildings take the burst's damage.
+- tf_ultimate.cpp/.h: Ultimate_PlayVoiceLine (the Veteran's voice-line code, now shared).
+  Nano Boost plays vo/medic_battlecry01.mp3 the same way; when it ends the target says the
+  Battle Cry voice command (TFGameRules()->VoiceCommand( target, 2, 1 )).
+- tf_player_shared.cpp: a Nano-boosted Heavy with the Buffalo Steak's melee lock gets the
+  energy buff's speed; adding or removing the lock refreshes speed.
+- server/tf/tf_damage_over_time.cpp: healing over time applies the heal modifiers itself and
+  carries the fraction (TakeHealth with DMG_IGNORE_DEBUFFS).
+Tested in game:
+  - Grenade then a rifle shot on a hurt teammate: +52, then +78 (13, 14, 13, 15, 14, 9).
+  - Second grenade while boosted: +52 (not 78), boost timer back to about 3 s.
+  - Grenade on an enemy sentry: 150 -> 98.
+  - Nano-boosted Heavy: 230; with the steak's melee lock 299; lock removed 230.
+  - Nano Boost: the Heavy's Battle Cry scene (scenes/Player/Heavy/low/207.vcd,
+    PlayerBattleCryHeavy) started 0.59 s after Q; the Medic line is 0.53 s.
+  - Screenshots: the no-heal sign on the health cross, the crossbow viewmodel, one merged
+    damage number with hud_combattext_batching 1, the third-person throw.
+
+
+14. Nano target outline, building charge, scope vs reload, rifle damage over time on buildings
+------------------------------------------------------------------------------------------------
+- tf_combatmed_abilities.cpp/.h: CombatMed_FindNanoTarget is shared; a client
+  CAutoGameSystemPerFrame outlines the target yellow (CGlowObject) while the local Combat
+  Medic's ultimate is ready.
+- tf_ultimate.cpp/.h: no ultimate charge from damage to buildings (any hero).
+- tf_weapon_combatmed_rifle.cpp/.h: UpdateScope (from ItemPostFrame and ItemBusyFrame); a
+  new MOUSE2 press interrupts a reload; m_bScopeStoppedReload holds an empty clip's
+  automatic reload until the player unscopes.
+- server/tf/tf_damage_over_time.cpp/.h: the victim can be any damageable entity (EHANDLE;
+  players stop when dead, others when destroyed); the rifle's building hits use it.
+- Health packs: no change needed (dropper credit is Event_PlayerHealedOtherAssist, no charge).
+Tested in game (itemtest; disabled enemy sentry, enemy and teammate Heavies):
+  - Rifle on the sentry: 150 -> 141 -> 98 over the 0.6 s; ultimate charge stayed 0. On the
+    enemy player: charge 0 -> 52.
+  - Medium health pack: health 19 -> 107, charge unchanged.
+  - Empty clip reloading, then scope: reload stopped, scoped with 0 rounds and no reload;
+    unscoped: reloaded to 15. Clip 10 reloading, then scope: stopped, scoped, 10 kept.
+  - Screenshots: yellow outline on the teammate near the crosshair with the ultimate
+    ready; none when looking away.
