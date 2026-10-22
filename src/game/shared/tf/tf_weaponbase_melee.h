@@ -87,6 +87,10 @@ protected:
 	virtual void	Swing( CTFPlayer *pPlayer );
 	virtual void	PlaySwingSound( void );
 
+	// OWTF2: was private. Hit handling for one trace (sounds, effects, damage); the alternating
+	// melee sweep (tf_weapon_alternating_melee) calls it once per target.
+	bool OnSwingHit( trace_t &trace );
+
 protected:
 
 	float	m_flSmackTime;
@@ -99,7 +103,7 @@ protected:
 
 private:
 	bool DoSwingTraceInternal( trace_t &trace, bool bCleave, CUtlVector< trace_t >* pTargetTraceVector );
-	bool OnSwingHit( trace_t &trace );
+	// OWTF2: OnSwingHit moved to protected (above).
 
 	CTFWeaponBaseMelee( const CTFWeaponBaseMelee & ) {}
 };

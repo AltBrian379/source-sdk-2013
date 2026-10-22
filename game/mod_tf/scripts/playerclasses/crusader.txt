@@ -1,0 +1,48 @@
+//
+// OWTF2 - Crusader Player Class
+//
+// Plain .txt is loaded before the encrypted .ctx (see ReadEncryptedKVFile), so no encryption is needed.
+// Placeholder model, hands and sounds from the Demoman. Plan: docs/crusader-plan.txt.
+//
+PlayerClass
+{
+	// Attributes.
+	"name"			"crusader"
+	"model"			"models/player/demo.mdl"
+	"model_hwm"		"models/player/hwm/demo.mdl"
+	"model_hands"	"models/weapons/c_models/c_demo_arms.mdl"
+	"localize_name"	"TF_Class_Name_Crusader"
+	"speed_max"		"280"	// OWTF2: ported heroes move at the Demoman's speed
+	"health_max"	"385"	// the user's value for the tank (Overwatch's Reinhardt is a tank with armor; no armor system yet)
+	"armor_max"		"0"
+
+	// Ultimate: none until phase 5 (src/game/shared/tf/tf_ultimate.h).
+	"ultimate_cost"		"0"
+	"ultimate_duration"	"0"
+	"ultimate_cast_time"	"0"
+
+	// Weapons will come from the item loadout (items_owtf2.txt); these legacy entries are unused.
+	"weapon1"		""
+	"weapon2"		""
+	"weapon3"		""
+
+	//Thirdperson
+	"cameraoffset_forward"	"85"
+	"cameraoffset_right"	"25"
+	"cameraoffset_up"		"0"
+
+	AmmoMax
+	{
+		"tf_ammo_primary"	"0"
+		"tf_ammo_secondary"	"0"
+		"tf_ammo_metal"		"0"
+		"tf_ammo_grenades1"	"0"
+		"tf_ammo_grenades2"	"0"
+	}
+
+	// Death Sounds
+	"sound_death"				"Demoman.Death"
+	"sound_crit_death"			"Demoman.CritDeath"
+	"sound_melee_death"			"Demoman.MeleeDeath"
+	"sound_explosion_death"		"Demoman.ExplosionDeath"
+}

@@ -85,6 +85,7 @@ StatMap_t* g_SteamStats_Class[] = {
 	g_SteamStats_Engineer,	// Engineer
 	NULL,					// OWTF2: Veteran, no Steam stats
 	NULL,					// OWTF2: Combat Medic, no Steam stats
+	NULL,					// OWTF2: Crusader, no Steam stats
 };
 COMPILE_TIME_ASSERT( ARRAYSIZE( g_SteamStats_Class ) == TF_LAST_NORMAL_CLASS );	// OWTF2: catch a missing class row
 

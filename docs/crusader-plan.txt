@@ -1,0 +1,207 @@
+OWTF2 - Crusader (Reinhardt-like tank hero): plan (DRAFT)
+=========================================================
+
+Gameplay of Overwatch's Reinhardt, recreated with an original name. Nothing from Blizzard
+(names, models, sounds, art) goes into the mod. This is a first draft: the kit below is what
+the user described; more cases come later, and assets get their own section once described.
+
+Naming
+------
+- Display name: "Crusader". (TF2 already has the Crusader's Crossbow, and the Combat Medic
+  uses its model as a placeholder; only the display text could be confused, the code can't.)
+- Code: TF_CLASS_CRUSADER (12, after Combat Medic; Civilian moves to 13, Random to 15).
+  Raw name "crusader", class script scripts/playerclasses/crusader.txt.
+- Functions Crusader_*, classes CTFCrusader*, convars tf_crusader_* (FCVAR_REPLICATED |
+  FCVAR_NOTIFY). Every tunable number is a convar, commented with its Overwatch source value.
+
+Placeholders and stats
+----------------------
+- Model: the Demoman (the Targe's charge animations and the Eyelander's swings exist for him).
+  Chosen by the user for phase 0.
+- Base speed 280, like every ported hero.
+- Health: 385 (the user's value; crusader.txt). Hammer damage 70 (the user's value): a
+  Crusader takes 6 swings (385 / 70 = 5.5).
+- Damage scale: TF2 health / Overwatch health. Reinhardt's Overwatch health has changed often
+  (5v5 vs 6v6 patches, health/armor splits); check the live value before Phase 0 and compute
+  the scale then. Check the mirror time to kill (hammer swings to kill a Crusader).
+- TODO: armor health, as in Overwatch. Reinhardt's health is part health, part armor, and
+  armor reduces the damage of each hit that lands on it. TF2 has no armor, so it's a new
+  shared system (any hero can use it): an armor pool on the player, used up before health, with
+  its own per-hit damage reduction, plus a HUD display. How much of the 300 is armor, the
+  reduction rule, and how healing refills it are decided when it's built (check the live
+  Overwatch rules then, not now).
+- Overwatch values to check before each phase (sources disagree; none confirmed yet):
+  hammer damage and swing time, Fire Strike damage, cooldown and charges, Charge cooldown,
+  duration, speed and pin damage, Earthshatter range, cone width and stun time.
+
+Loadout and keys (proposal)
+---------------------------
+  Slot 1  Rocket hammer   +attack swings. The only real weapon (melee as the main weapon).
+  -       Charge          +attack4 (SHIFT), the class ability key.
+  -       Fire Strike     needs a key. Overwatch uses E; the mod has no E ability key yet.
+                          Options: a new +attack6 bound to E, or MOUSE2 until a barrier
+                          exists. TO DECIDE.
+  -       Ultimate        +attack5 (Q), the ultimate system ("Earthshatter"-like; name TBD).
+Fire Strike is a cast (the hammer can't swing during it): a CTFCastAbilityWeapon, or a cast
+time on the hammer like the Veteran's helix (m_flHelixCastEndTime pattern). The second avoids a
+weapon switch away from the hammer; preferred.
+
+Hammer swing (Phase 2)
+----------------------
+- Already in (ahead of phase 2, for the animations): tf_weapon_crusader_hammer
+  (CTFCrusaderHammer, TF_WEAPON_CRUSADER_HAMMER), item 60005, the primary on key 1, a melee
+  weapon. 70 damage (the user's value). PLACEHOLDER: the Eyelander's model and sounds.
+- Swing timing (DONE, the user's Overwatch values): 1.05 s per swing (TimeFireDelay), split into
+  cast tf_crusader_hammer_cast_time (0.4 s, no hitbox), active tf_crusader_hammer_sweep_time
+  (0.21 s: the 10 rays, one every 0.021 s) and recovery (the rest, 0.44 s). The user's recovery
+  was 0.5 s, which with 0.4 + 0.21 adds up to 1.11, not 1.05: the 1.05 fire rate was kept.
+  Tested: swings 1.05 s apart, every hit 0.40-0.54 s into its swing.
+- Viewmodel timing (DONE): the swing sequence's playback rate changes per phase
+  (UpdateSwingAnimRate, predicted): its wind-up fills the cast, the frames where the blade
+  crosses the screen play over the active time, the rest fills the recovery. Crossing frames
+  (measured frame by frame in slow motion; cycles of the 1.0 s sequences): cm_swing_a
+  0.19-0.33, cm_swing_b 0.23-0.37. Rates: left 0.475 / 0.667 / 1.52, right 0.575 / 0.667 /
+  1.43. Tested: the cycle is 0.19 at 0.40 s, 0.33 at 0.61 s and 0.99 at 1.05 s; screenshots
+  show the blade crossing between 0.41 and 0.56 s. No prediction errors.
+- Knockback (DONE): TF2's damage-based push (ApplyPushFromDamage: DamageForce(hull, damage,
+  tf_damageforcescale_other 6), half on Heavies, none on buildings), but straight sideways in
+  the swing's direction (the camera's left for a left swing; horizontal; no push toward or away
+  from the Crusader). CTFPlayer::AdjustDamageDirection (OWTF2 override) asks the weapon
+  (AlternatingSwing_AdjustDamageDirection) while a sweep hit is applied. Tested on standing
+  Soldier bots: 70 damage pushes 420 HU/s to the left on a left swing, to the right on a right
+  swing, about 0 forward.
+- Hit (DONE, the user's design; replaces TF2's one trace and the all-at-once arc idea above): a sweep of
+  rays (CTFAlternatingSwingMelee's sweep, GetSweepParams). tf_crusader_hammer_rays (10) rays
+  across tf_crusader_hammer_arc (65 degrees) in front of the camera, tf_crusader_hammer_range
+  (200 HU: 5 m = 197) long, fired one at a time evenly through the active time (see "Swing
+  timing": ray i at 0.4 + i * 0.021 s),
+  in the swing's direction (a left swing sweeps from the right edge to the left edge). Each ray
+  is aimed from the camera when it fires: turning while swinging widens the arc. The world and
+  props stop a ray; every enemy player or building whose hull it crosses is hit; the space
+  between consecutive rays is filled (extra rays at most 1 degree apart). A target is hit once
+  per swing. Server side, lag compensated; TF2's hit handling (OnSwingHit: sounds, damage,
+  crits). Debug: tf_alternating_swing_debug 1 (cheat) draws the rays.
+  Tested (itemtest, standing Heavy bots, random crits off): enemies at 25 degrees right / ahead
+  / 25 degrees left, 100-180 HU: left swing hit them right to left at 0.05 / 0.29 / 0.63 s,
+  the chained right swing left to right; one at 260 HU and one 50 degrees left were never hit;
+  turning 40 degrees left mid-swing hit the one at 50 degrees too. 65 per hit, once per swing.
+  TF2's random melee crits still apply (a crit swing did 195 to each target); TO DECIDE.
+- TF2 melee hits one target with one trace (CTFWeaponBaseMelee::DoSwingTrace). The hammer
+  replaces that with an arc: every enemy (players, buildings) inside a horizontal arc in front
+  of the eyes, within range, with line of sight from the eye to the target, is hit once.
+  Lag compensated (like melee, CTFPlayer::WantsLagCompensationOnEntity).
+- Swings alternate direction (left-to-right, then right-to-left). Knockback: a small sideways
+  impulse in the swing's direction (ApplyAbsVelocityImpulse on players; none on buildings),
+  tf_crusader_hammer_knockback. Only a sideways push, no pull toward or away from him.
+- TF2 modifiers apply on top (random crits off for the hammer? TO DECIDE; melee has no falloff).
+- Animation: see "Animations (the user's rules)" below.
+
+Fire Strike (Phase 3)
+---------------------
+- A projectile fired straight from the eye, no gravity, no range limit: it flies until it hits
+  the world or a prop (static props, prop_physics, func_brush-like solids). Own swept trace each
+  tick, like the biotic round, with a filter that passes through players and buildings.
+- Every enemy player and building it passes through takes the damage once (a hit list on the
+  projectile). Teammates: passed through, no effect.
+- "Shields": it goes through them. TF2's candidates are the Medic's MvM projectile shield
+  (entity_medigun_shield) and, later, the Crusader's own barrier if one is added. Which shields
+  exist is TO DECIDE; the rule is that nothing but world/props stops it.
+- Safety: a lifetime cap (e.g. 10 s) so a projectile in an open skybox can't live forever.
+- Animation: the overhead strike (see "Animations" below).
+
+Animations (the user's rules)
+-----------------------------
+Goal: match the original hero's attacks for faithfulness and consistency, but above all for
+readability (an enemy must tell a swing from a Fire Strike at a glance). Full name lists:
+docs/demoman-animations.txt.
+Reference weapon: the Eyelander (a Demoman sword; c_demo_arms cm_* set in first person), checked
+by the user: its normal swings go left and right, and its crit swing is overhead. Its third-person
+swing doesn't fit (the swords' overhead strike), so third person borrows the bottle's swing.
+Placeholder weapon model: the Eyelander, in both views (first person and in the world model's
+hand), whichever animation plays.
+- Hammer swing, first person: alternate a swing to the left and a swing to the right with the
+  Eyelander's normal swings (ACT_VM_HITCENTER_SPECIAL). "Left" = the blade moves toward the left.
+  cm_swing_a (LEFT): winds up to the right, then the blade crosses right to left. cm_swing_b
+  (RIGHT): raises the arm to the upper left, then crosses left to right. (First mapped the other
+  way round from a wind-up frame; the user saw it and they were swapped, checked frame by frame.) TF2 picks between them at random, so the weapon
+  plays them by name. DONE (tf_weapon_crusader_hammer, see "Alternating swing" below).
+- Hammer swing, third person: the Eyelander in hand, but NOT the swords' animation. Two-handed swords (anim_slot item1,
+  attackstand_ITEM1) always strike overhead. Use the bottle / stock melee swing instead
+  (Melee_Swing, ACT_MP_ATTACK_STAND_MELEE, with its crouch and swim versions). It only swings
+  to the left; there's no right-hand version, so both directions use it.
+- Fire Strike, first person: the overhead strike, the Eyelander's crit swing
+  (cm_swing_c, ACT_VM_SWINGHARD_SPECIAL).
+- Fire Strike, third person: the Eyelander in hand, the swords' overhead strike (attackstand_ITEM1, ACT_MP_ATTACK_*_ITEM1).
+- So the overhead is reserved for Fire Strike, in both views. If the hammer gets TF2 crits, a
+  crit swing must not use cm_swing_c (it would read as a Fire Strike).
+- Third-person stand/run pose: the two-handed sword pose (anim_slot item1), the user's choice.
+  The bottle swing plays as a gesture over it (PLAYERANIMEVENT_CUSTOM_GESTURE).
+
+Alternating swing (DONE, shared hero system: tf_weapon_alternating_melee.cpp/.h)
+- Overwatch's rule: the first swing is to the left. The next one goes the other way only if it
+  chains: it starts on the very tick the previous swing allows the next one (attack held, or a
+  press buffered during the swing). Starting even one tick later is a left swing again.
+- Buffer: a press during a swing queues the next one, which starts as soon as allowed even if
+  the button was released. One try: if it can't swing then (stunned, ...), the buffer is spent.
+- Deploying, holstering or a weapon reset forget the chain.
+- Animations per side in both views: a viewmodel sequence name and third-person gestures for
+  standing, crouching and swimming. Third person has its own left and right entries, so custom
+  animations can show both later; for now both are the bottle's swing.
+- Never the overhead crit swing for a normal swing, even on a crit.
+- Tested in game (itemtest): held: LEFT RIGHT LEFT; a tap, then another after the swing was
+  ready: LEFT, LEFT; a tap during that swing: RIGHT right when allowed. No prediction errors
+  on the swing state (cl_showerror 2).
+
+Charge (Phase 4)
+----------------
+- SHIFT starts it. The player is forced forward at the charge speed; input can steer only a
+  little (a turn-rate cap, like the Targe's TF_COND_SHIELD_CHARGE turning; see
+  CTFGameMovement and the "charge turn control" attribute). No jumping, no weapon use.
+- Predicted movement in tf_gamemovement.cpp, state in CTFPlayerShared (networked, predicted
+  end time), like Sprint.
+- Ends on: the duration running out; hitting the world or a prop head-on; meeting another
+  charging player (another Crusader; whether a Demoman's shield charge counts is TO DECIDE).
+- Enemies met: the first enemy player is stunned and pinned: carried in front of the Crusader
+  (its position set each tick by the server; its own movement is frozen by a full stun).
+  Others hit along the way get knocked aside (Overwatch does this; TO CONFIRM).
+- With a pinned enemy: crashing into the world or a prop deals pin damage and ends the charge;
+  if the duration runs out first, the enemy is released with no pin damage (Overwatch's rule;
+  TO CONFIRM the user wants the damage).
+- Not pinnable: ÜberCharged players (TO DECIDE), buildings (hit and stop? TO DECIDE).
+- Risks: carrying a player server-side fights its client prediction; the stun freezes its
+  input, but its origin will still correct (expected to look fine, verify with cl_showerror).
+
+Ultimate (Phase 5)
+------------------
+- Instant or short cast (TBD), uses the existing ultimate system (instant drain).
+- A cone on the ground in front of him, out to a set range. An enemy player is stunned
+  (TF2's full stun, like the Sleep Dart; duration convar) only if all hold:
+  - on the ground (players in the air are not hit);
+  - inside the cone and the range;
+  - the wave can reach them along the floor: a trace at low height (just above a step, e.g.
+    tf_crusader_ult_wave_height) from his feet to theirs is clear. Anything taller than that
+    height (world, props) blocks it; low steps and slopes don't. To follow floors that go up
+    and down, the check may need several traces along the path (a stepped walk), not one line.
+    Start with the single low trace; refine after testing on ramps and stairs.
+- ÜberCharge: probably blocks it (like the Sleep Dart). TO DECIDE.
+- Effects (wave visual, sound) are placeholders.
+
+Open questions (fleshed out later, per the user)
+------------------------------------------------
+- Barrier: Reinhardt's shield isn't in the kit yet. If added later, Fire Strike passes it and
+  the MOUSE2 key may be wanted for it.
+- Interactions with TF2: airblast vs pin, knockback during charge, sentries, the Combat Medic's
+  sleep and Nano Boost on a Crusader.
+
+Phases
+------
+0. Class skeleton (enum, tables, crusader.txt, class menu, loadout slot), following
+   docs/veteran-class-changes.txt and the COMPILE_TIME_ASSERTs. DONE (section 15 there):
+   Demoman placeholders, 175 HP for now.
+1. Shared systems needed: arc melee helper, pass-through projectile filter, ground-wave reach
+   check (may stay hero-specific), armor health (TODO above).
+2. Hammer swing.
+3. Fire Strike.
+4. Charge (and pin).
+5. Ultimate.
+6. Details: assets (next prompt), HUD meters, sounds, class-menu art.

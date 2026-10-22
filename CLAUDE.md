@@ -34,6 +34,8 @@ drives a test run:
 - Log results with `printl` and read `game/mod_tf/console.log`. `jpeg` takes
   screenshots into `game/mod_tf/screenshots/`.
 - Delete the test script, screenshots and `console.log` afterwards.
+- `SendToServerConsole` from `mapspawn.nut` doesn't set some server convars (`tf_weapon_criticals` stayed 1; the
+  script convar allowlist doesn't load). Read them back with `Convars.GetInt`; set them at launch (`+tf_weapon_criticals 0`).
 
 The main objective is functionality. Polish comes last. Order:
 1. Abilities: sprint, helix rockets, healing field (all done), then the ultimate's effect.
@@ -69,6 +71,14 @@ Stat scaling for ported heroes (the user's rule; values don't have to be faithfu
 Next hero: an Ana-like support, **Combat Medic** (`TF_CLASS_COMBATMED`). The plan, with every design decision,
 is `docs/combatmed-plan.txt`. Follow it. Phases 0 (class skeleton), 1 (shared systems), 2 (Biotic Rifle),
 3 (Biotic Grenade), 4 (Sleep Dart) and 5 (Nano Boost) are done. Phase 6 (details) remains.
+
+Third hero: a Reinhardt-like tank, **Crusader** (`TF_CLASS_CRUSADER`). Draft plan: `docs/crusader-plan.txt`.
+Phase 0 (class skeleton) is done: Demoman placeholders, 385 HP (the user's value). Phase 2 (hammer) mostly done.
+Ahead of phase 2: the hammer `tf_weapon_crusader_hammer` (`CTFCrusaderHammer`, item 60005, primary, key 1, a melee
+weapon; 70 damage; 1.05 s swing: 0.4 s cast, 0.21 s of rays, recovery; PLACEHOLDER Eyelander model and sounds) with
+alternating swings, a sweep of rays, and
+TF2's damage-based knockback pointed sideways along the swing (`CTFPlayer::AdjustDamageDirection`). Animation rules
+(readability first): plan's "Animations" section; names: `docs/demoman-animations.txt`.
 
 Done: Nano Boost, the ultimate (`ultimate_cost` 2300, instant). Q needs a living teammate under the crosshair, else
 the one closest to it within `tf_combatmed_nano_aim_cone` (20 degrees, PLACEHOLDER), in `tf_combatmed_nano_range`
@@ -167,6 +177,12 @@ Shared hero systems (any hero can use them):
 - Teammate-hitting shots: `CTraceFilterSkipFullHealthTeammates` / `OWTF2_IsHurtTeammate` (`tf_teammate_trace.h`).
   TF2 bullets already stop at teammates; the filter lets full-health ones through. Weapons return true from
   `CTFWeaponBase::HitsTeammates()` to have teammates lag-compensated (not observable with standing bots).
+- Alternating melee swings: `CTFAlternatingSwingMelee` (`tf_weapon_alternating_melee.cpp/.h`). Left first; the next
+  swing goes right only if it starts on the tick the last one allows (held or buffered press), else left again. Per
+  side: viewmodel sequence by name, third-person gesture per stance (`GetSwingAnims`). Used by the Crusader's hammer.
+  Optional sweep hit (`GetSweepParams`): N rays across an arc from the camera, one at a time through the swing, in the
+  swing's direction; the space between rays is filled; each enemy player or building hit once per swing; server side,
+  lag compensated, through `OnSwingHit` (made protected in `tf_weaponbase_melee.h`). Debug: `tf_alternating_swing_debug 1`.
 - `Ultimate_InterruptCast` ends an ultimate that's still casting; the charge is lost. Test: `tf_ultimate_interrupt_test`.
 
 Ability conventions:
@@ -366,11 +382,15 @@ Testing note: `hud_fastswitch 0` (bucket mode) needs a click after pressing 2, l
 - Don't commit unless asked.
 
 ## The mod's classes
-`TF_CLASS_VETERAN` (10) and `TF_CLASS_COMBATMED` (11) in `ETFClass`, `src/game/shared/tf/tf_shareddefs.h`,
-right after Engineer. Civilian (now 12) is still `TF_LAST_NORMAL_CLASS`; Random is now 14.
-`docs/veteran-class-changes.txt` lists every file touched and why (section 7 for the Combat Medic).
+`TF_CLASS_VETERAN` (10), `TF_CLASS_COMBATMED` (11) and `TF_CLASS_CRUSADER` (12) in `ETFClass`,
+`src/game/shared/tf/tf_shareddefs.h`, right after Engineer. Civilian (now 13) is still `TF_LAST_NORMAL_CLASS`;
+Random is now 15. `docs/veteran-class-changes.txt` lists every file touched and why (section 7 for the Combat
+Medic, 15 for the Crusader).
 - Combat Medic: `combatmed.txt` (Medic model and sounds, 175 HP, speed 280), menu slot 11, Medic art
   placeholders (`GetPlaceholderContentClass` in `tf_classmenu.cpp`). No weapons or ultimate yet.
+- Crusader: `crusader.txt` (Demoman model and sounds, 385 HP, speed 280), menu slot 12, Demoman art placeholders.
+  Only the hammer so far, no abilities or ultimate. Its chalkboard tips are `ClassTips_crusader_*`: stock Random's are `ClassTips_12_*`,
+  so mod classes numbered 12 and up are keyed by raw name (`GetClassTipsKey`, `tf_classmenu.cpp`).
 - Class data: `game/mod_tf/scripts/playerclasses/veteran.txt` (plain `.txt`
   is read before the encrypted `.ctx`).
 - Class menu: `client/tf/vgui/tf_classmenu.cpp` plus the

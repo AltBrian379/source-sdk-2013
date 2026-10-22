@@ -252,6 +252,7 @@ const char *g_pszHeadGibs[] =
 	"models/player\\gibs\\engineergib006.mdl",
 	"models/player\\gibs\\snipergib005.mdl",	// OWTF2: Veteran uses the Sniper model
 	"models/player\\gibs\\medicgib007.mdl",	// OWTF2: Combat Medic uses the Medic model
+	"models/player\\gibs\\demogib006.mdl",	// OWTF2: Crusader uses the Demoman model
 };
 COMPILE_TIME_ASSERT( ARRAYSIZE( g_pszHeadGibs ) == TF_LAST_NORMAL_CLASS );	// OWTF2: catch a missing class row
 
@@ -269,6 +270,7 @@ const char *g_pszBotHeadGibs[] =
 	"models/bots\\gibs\\engineerbot_gib_head.mdl",
 	"models/bots\\gibs\\sniperbot_gib_head.mdl",	// OWTF2: Veteran uses the Sniper model
 	"models/bots\\gibs\\medicbot_gib_head.mdl",	// OWTF2: Combat Medic uses the Medic model
+	"models/bots\\gibs\\demobot_gib_head.mdl",	// OWTF2: Crusader uses the Demoman model
 };
 COMPILE_TIME_ASSERT( ARRAYSIZE( g_pszBotHeadGibs ) == TF_LAST_NORMAL_CLASS );	// OWTF2: catch a missing class row
 

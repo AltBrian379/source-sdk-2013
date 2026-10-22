@@ -177,6 +177,7 @@ static int g_TauntCamRagdollAchievements[] =
 	0,		// TF_CLASS_ENGINEER,
 	0,		// TF_CLASS_VETERAN, OWTF2: new class
 	0,		// TF_CLASS_COMBATMED, OWTF2: new class
+	0,		// TF_CLASS_CRUSADER, OWTF2: new class
 
 	0,		// TF_CLASS_CIVILIAN,
 	0,		// TF_CLASS_COUNT_ALL,
@@ -197,6 +198,7 @@ static int g_TauntCamAchievements[] =
 	ACHIEVEMENT_TF_ENGINEER_FREEZECAM_TAUNT,	// TF_CLASS_ENGINEER,
 	0,		// TF_CLASS_VETERAN, OWTF2: new class
 	0,		// TF_CLASS_COMBATMED, OWTF2: new class
+	0,		// TF_CLASS_CRUSADER, OWTF2: new class
 	0,		// TF_CLASS_CIVILIAN,
 	0,		// TF_CLASS_COUNT_ALL,
 };
@@ -217,6 +219,7 @@ static int g_TauntCamAchievements2[] =
 	0,		// TF_CLASS_ENGINEER,
 	0,		// TF_CLASS_VETERAN, OWTF2: new class
 	0,		// TF_CLASS_COMBATMED, OWTF2: new class
+	0,		// TF_CLASS_CRUSADER, OWTF2: new class
 
 	0,		// TF_CLASS_CIVILIAN,
 	0,		// TF_CLASS_COUNT_ALL,
@@ -829,6 +832,7 @@ ConVar tf_tournament_classlimit_spy( "tf_tournament_classlimit_spy", "-1", FCVAR
 ConVar tf_tournament_classlimit_engineer( "tf_tournament_classlimit_engineer", "-1", FCVAR_REPLICATED, "Tournament mode per-team class limit for Engineers.\n" );
 ConVar tf_tournament_classlimit_veteran( "tf_tournament_classlimit_veteran", "-1", FCVAR_REPLICATED, "Tournament mode per-team class limit for Veterans.\n" );	// OWTF2: new class
 ConVar tf_tournament_classlimit_combatmed( "tf_tournament_classlimit_combatmed", "-1", FCVAR_REPLICATED, "Tournament mode per-team class limit for Combat Medics.\n" );	// OWTF2: new class
+ConVar tf_tournament_classlimit_crusader( "tf_tournament_classlimit_crusader", "-1", FCVAR_REPLICATED, "Tournament mode per-team class limit for Crusaders.\n" );	// OWTF2: new class
 ConVar tf_tournament_classchange_allowed( "tf_tournament_classchange_allowed", "1", FCVAR_REPLICATED, "Allow players to change class while the game is active?.\n" );
 ConVar tf_tournament_classchange_ready_allowed( "tf_tournament_classchange_ready_allowed", "1", FCVAR_REPLICATED, "Allow players to change class after they are READY?.\n" );
 
@@ -1380,6 +1384,7 @@ Vector g_TFClassViewVectors[TF_CLASS_COUNT_ALL] =	// OWTF2: was [11]
 	Vector( 0, 0, 68 ),		// TF_CLASS_ENGINEER,
 	Vector( 0, 0, 75 ),		// TF_CLASS_VETERAN, OWTF2: matches the Sniper model it uses
 	Vector( 0, 0, 75 ),		// TF_CLASS_COMBATMED, OWTF2: matches the Medic model it uses
+	Vector( 0, 0, 68 ),		// TF_CLASS_CRUSADER, OWTF2: matches the Demoman model it uses
 
 	Vector( 0, 0, 65 ),		// TF_CLASS_CIVILIAN,		// TF_LAST_NORMAL_CLASS
 };
@@ -17719,6 +17724,7 @@ int CTFGameRules::GetClassLimit( int iClass )
 		case TF_CLASS_ENGINEER: return tf_tournament_classlimit_engineer.GetInt(); break;
 		case TF_CLASS_VETERAN: return tf_tournament_classlimit_veteran.GetInt(); break;	// OWTF2: new class
 		case TF_CLASS_COMBATMED: return tf_tournament_classlimit_combatmed.GetInt(); break;	// OWTF2: new class
+		case TF_CLASS_CRUSADER: return tf_tournament_classlimit_crusader.GetInt(); break;	// OWTF2: new class
 		default:
 			break;
 		}

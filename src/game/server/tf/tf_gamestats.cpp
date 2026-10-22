@@ -58,6 +58,7 @@ const char *g_aClassNames[] =
 	"TF_CLASS_ENGINEER",
 	"TF_CLASS_VETERAN",	// OWTF2: new class
 	"TF_CLASS_COMBATMED",	// OWTF2: new class
+	"TF_CLASS_CRUSADER",	// OWTF2: new class
 	"TF_CLASS_CIVILIAN",
 };
 COMPILE_TIME_ASSERT( ARRAYSIZE( g_aClassNames ) == TF_CLASS_COUNT_ALL );	// OWTF2

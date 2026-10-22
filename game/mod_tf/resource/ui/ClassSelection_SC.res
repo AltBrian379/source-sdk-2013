@@ -68,14 +68,14 @@
 		"actionName"	"menu_right"
 	}
 
-	// OWTF2: moved right of the mod's classes; TF_CLASS_RANDOM is now 14
+	// OWTF2: TF_CLASS_RANDOM is now 15 (the mod's classes come before Civilian)
 	"random"
 	{
 		"ControlName"		"CExImageButton"
 		"fieldName"			"random"
-		"xpos"				"c320"
-		"xpos_lodef"				"c287"
-		"xpos_hidef"				"c312"
+		"xpos"				"c250"
+		"xpos_lodef"				"c217"
+		"xpos_hidef"				"c238"
 		"ypos"				"-5"
 		"ypos_lodef"				"9"
 		"ypos_hidef"				"0"
@@ -89,7 +89,7 @@
 		"tabPosition"		"0"
 		"labelText"			""
 		"textAlignment"		"south-west"
-		"Command"			"select 14"
+		"Command"			"select 15"
 		"Default"			"1"
 		"font"				"MenuKeys"
 		"scaleImage"		"1"
@@ -156,9 +156,9 @@
 	{
 		"ControlName"	"CExLabel"
 		"fieldName"		"Offense"
-		"xpos"			"c-320"
-		"xpos_hidef"			"c-307"
-		"xpos_lodef"	"c-280"
+		"xpos"			"c-300"
+		"xpos_hidef"			"c-287"
+		"xpos_lodef"	"c-260"
 		"ypos"			"96"
 		"ypos_hidef"			"102"
 		"ypos_lodef"	"116"
@@ -182,9 +182,9 @@
 	{
 		"ControlName"		"CExImageButton"
 		"fieldName"			"scout"
-		"xpos"				"c-320"
-		"xpos_hidef"				"c-310"
-		"xpos_lodef"		"c-285"
+		"xpos"				"c-300"
+		"xpos_hidef"				"c-290"
+		"xpos_lodef"		"c-265"
 		"ypos"				"-5"
 		"ypos_lodef"				"9"
 		"ypos_hidef"				"0"
@@ -266,9 +266,9 @@
 	{
 		"ControlName"		"CExImageButton"
 		"fieldName"			"soldier"
-		"xpos"				"c-270"
-		"xpos_hidef"				"c-264"
-		"xpos_lodef"		"c-245"
+		"xpos"				"c-250"
+		"xpos_hidef"				"c-244"
+		"xpos_lodef"		"c-225"
 		"ypos"				"-5"
 		"ypos_lodef"				"9"
 		"ypos_hidef"				"0"
@@ -349,9 +349,9 @@
 	{
 		"ControlName"		"CExImageButton"
 		"fieldName"			"pyro"
-		"xpos"				"c-220"
-		"xpos_hidef"				"c-214"
-		"xpos_lodef"		"c-200"
+		"xpos"				"c-200"
+		"xpos_hidef"				"c-194"
+		"xpos_lodef"		"c-180"
 		"ypos"				"-5"
 		"ypos_lodef"				"9"
 		"ypos_hidef"				"0"
@@ -432,9 +432,9 @@
 	{
 		"ControlName"	"CExLabel"
 		"fieldName"		"Defense"
-		"xpos"			"c-130"
-		"xpos_hidef"			"c-125"
-		"xpos_lodef"	"c-115"
+		"xpos"			"c-110"
+		"xpos_hidef"			"c-105"
+		"xpos_lodef"	"c-95"
 		"ypos"			"96"
 		"ypos_hidef"			"102"
 		"ypos_lodef"	"116"
@@ -458,8 +458,8 @@
 	{
 		"ControlName"		"CExImageButton"
 		"fieldName"			"demoman"
-		"xpos"				"c-130"
-		"xpos_lodef"		"c-120"
+		"xpos"				"c-110"
+		"xpos_lodef"		"c-100"
 		"ypos"				"-5"
 		"ypos_lodef"				"9"
 		"ypos_hidef"				"0"
@@ -539,8 +539,8 @@
 	{
 		"ControlName"		"CExImageButton"
 		"fieldName"			"heavyweapons"
-		"xpos"				"c-80"
-		"xpos_lodef"		"c-75"
+		"xpos"				"c-60"
+		"xpos_lodef"		"c-55"
 		"ypos"				"-5"
 		"ypos_lodef"				"9"
 		"ypos_hidef"				"0"
@@ -620,7 +620,7 @@
 	{
 		"ControlName"		"CExImageButton"
 		"fieldName"			"engineer"
-		"xpos"				"c-30"
+		"xpos"				"c-10"
 		"ypos"				"-5"
 		"ypos_lodef"				"9"
 		"ypos_hidef"				"0"
@@ -700,9 +700,9 @@
 	{
 		"ControlName"	"CExLabel"
 		"fieldName"		"Support"
-		"xpos"			"c56"
-		"xpos_hidef"			"c54"
-		"xpos_lodef"	"c50"
+		"xpos"			"c76"
+		"xpos_hidef"			"c74"
+		"xpos_lodef"	"c70"
 		"ypos"			"96"
 		"ypos_hidef"			"102"
 		"ypos_lodef"	"116"
@@ -726,9 +726,9 @@
 	{
 		"ControlName"		"CExImageButton"
 		"fieldName"			"medic"
-		"xpos"				"c58"
-		"xpos_hidef"				"c50"
-		"xpos_lodef"		"c45"
+		"xpos"				"c78"
+		"xpos_hidef"				"c70"
+		"xpos_lodef"		"c65"
 		"ypos"				"-5"
 		"ypos_lodef"				"9"
 		"ypos_hidef"				"0"
@@ -809,9 +809,9 @@
 	{
 		"ControlName"		"CExImageButton"
 		"fieldName"			"sniper"
-		"xpos"				"c108"
-		"xpos_hidef"				"c100"
-		"xpos_lodef"		"c85"
+		"xpos"				"c128"
+		"xpos_hidef"				"c120"
+		"xpos_lodef"		"c105"
 		"ypos"				"-5"
 		"ypos_lodef"				"9"
 		"ypos_hidef"				"0"
@@ -892,9 +892,9 @@
 	{
 		"ControlName"		"CExImageButton"
 		"fieldName"			"spy"
-		"xpos"				"c158"
-		"xpos_hidef"				"c150"
-		"xpos_lodef"		"c125"
+		"xpos"				"c178"
+		"xpos_hidef"				"c170"
+		"xpos_lodef"		"c145"
 		"ypos"				"-5"
 		"ypos_lodef"				"9"
 		"ypos_hidef"				"0"
@@ -951,20 +951,16 @@
 			"scaleImage"	"1"
 		}				
 	}
-	// OWTF2: new class. Sniper art until it has its own.
+	// OWTF2: the mod's heroes are on a second row, under the stock one. Sniper art until it has its own.
 	"veteran"
 	{
 		"ControlName"		"CExImageButton"
 		"fieldName"			"veteran"
-		"xpos"				"c208"
-		"xpos_hidef"				"c200"
-		"xpos_lodef"		"c175"
-		"ypos"				"-5"
-		"ypos_lodef"				"9"
-		"ypos_hidef"				"0"
+		"xpos"				"c-146"
+		"ypos"				"112"
 		"zpos"				"6"
-		"wide"				"50"
-		"tall"				"100"
+		"wide"				"40"
+		"tall"				"80"
 		"autoResize"		"0"
 		"pinCorner"			"2"
 		"visible"			"1"
@@ -1007,28 +1003,24 @@
 			"xpos"			"0"
 			"ypos"			"0"
 			"zpos"			"7"
-			"wide"			"50"
-			"tall"			"100"
+			"wide"			"40"
+			"tall"			"80"
 			"visible"		"1"
 			"enabled"		"1"
 			"image"			"class_sel_sm_sniper_inactive"
 			"scaleImage"	"1"
 		}				
 	}
-	// OWTF2: new class. Medic art until it has its own.
+	// OWTF2: the mod's heroes are on a second row, under the stock one. Medic art until it has its own.
 	"combatmed"
 	{
 		"ControlName"		"CExImageButton"
 		"fieldName"			"combatmed"
-		"xpos"				"c258"
-		"xpos_hidef"				"c250"
-		"xpos_lodef"		"c225"
-		"ypos"				"-5"
-		"ypos_lodef"				"9"
-		"ypos_hidef"				"0"
+		"xpos"				"c-104"
+		"ypos"				"112"
 		"zpos"				"6"
-		"wide"				"50"
-		"tall"				"100"
+		"wide"				"40"
+		"tall"				"80"
 		"autoResize"		"0"
 		"pinCorner"			"2"
 		"visible"			"1"
@@ -1071,13 +1063,93 @@
 			"xpos"			"0"
 			"ypos"			"0"
 			"zpos"			"7"
-			"wide"			"50"
-			"tall"			"100"
+			"wide"			"40"
+			"tall"			"80"
 			"visible"		"1"
 			"enabled"		"1"
 			"image"			"class_sel_sm_medic_inactive"
 			"scaleImage"	"1"
 		}				
+	}
+	// OWTF2: the mod's heroes are on a second row, under the stock one. Demoman art until it has its own.
+	"crusader"
+	{
+		"ControlName"		"CExImageButton"
+		"fieldName"			"crusader"
+		"xpos"				"c-62"
+		"ypos"				"112"
+		"zpos"				"6"
+		"wide"				"40"
+		"tall"				"80"
+		"autoResize"		"0"
+		"pinCorner"			"2"
+		"visible"			"1"
+		"enabled"			"1"
+		"tabPosition"		"0"
+		"labelText"			""	[$WIN32]
+		"labelText"			""		[$X360]
+		"textAlignment"		"south-west"
+		"Command"			"select 12"
+		"Default"			"0"
+		"font"				"MenuKeys"
+		"scaleImage"		"1"
+		
+		"image_default"		"class_sel_sm_demo_inactive"
+		"image_armed"		"class_sel_sm_demo_inactive"
+		
+		"fgcolor"			"TanDark"
+		"defaultFgColor_override" "TanDark"
+		"armedFgColor_override" "TanDark"
+		"depressedFgColor_override" "TanDark"
+		
+		"sound_depressed"	"UI/buttonclick.wav"
+		"sound_released"	"UI/buttonclickrelease.wav"
+		"sound_armed"		"UI/buttonrollover.wav"
+		
+		"paintbackground"	"0"
+		
+		"image_drawcolor"		"255 255 255 180"
+		"image_armedcolor"		"255 255 255 255"
+		"image_selectedcolor"	"255 255 255 255"
+		
+		"stayselectedonclick"	"1"
+		"selectonhover"			"1"
+		"keyboardinputenabled"	"0"
+		
+		"SubImage"
+		{
+			"ControlName"	"ImagePanel"
+			"fieldName"		"SubImage"
+			"xpos"			"0"
+			"ypos"			"0"
+			"zpos"			"7"
+			"wide"			"40"
+			"tall"			"80"
+			"visible"		"1"
+			"enabled"		"1"
+			"image"			"class_sel_sm_demo_inactive"
+			"scaleImage"	"1"
+		}				
+	}
+	// OWTF2: label under the mod's hero row, like Offense / Defense / Support
+	"Heroes"
+	{
+		"ControlName"	"CExLabel"
+		"fieldName"		"Heroes"
+		"xpos"			"c-148"
+		"ypos"			"193"
+		"zpos"			"2"
+		"wide"			"90"
+		"tall"			"12"
+		"autoResize"	"1"
+		"pinCorner"		"2"
+		"visible"		"1"
+		"enabled"		"1"
+		"tabPosition"	"0"
+		"labelText"		"#OWTF2_ClassMenu_Heroes"
+		"textAlignment"	"left"
+		"font"			"MenuClassBuckets"
+		"fgcolor"		"TanDark"
 	}
 	"SpyHintIcon"
 	{
@@ -1578,7 +1650,7 @@
 	{
 		"ControlName"	"CExLabel"
 		"fieldName"		"numScout"
-		"xpos"			"c-320"
+		"xpos"			"c-300"
 		"ypos"			"10"
 		"zpos"			"5"
 		"wide"			"50"
@@ -1598,7 +1670,7 @@
 	{
 		"ControlName"	"CExLabel"
 		"fieldName"		"numSoldier"
-		"xpos"			"c-270"
+		"xpos"			"c-250"
 		"ypos"			"10"
 		"zpos"			"5"
 		"wide"			"50"
@@ -1618,7 +1690,7 @@
 	{
 		"ControlName"	"CExLabel"
 		"fieldName"		"numPyro"
-		"xpos"			"c-220"
+		"xpos"			"c-200"
 		"ypos"			"10"
 		"zpos"			"5"
 		"wide"			"50"
@@ -1638,7 +1710,7 @@
 	{
 		"ControlName"	"CExLabel"
 		"fieldName"		"numDemoman"
-		"xpos"			"c-130"
+		"xpos"			"c-110"
 		"ypos"			"10"
 		"zpos"			"5"
 		"wide"			"50"
@@ -1658,7 +1730,7 @@
 	{
 		"ControlName"	"CExLabel"
 		"fieldName"		"numHeavy"
-		"xpos"			"c-80"
+		"xpos"			"c-60"
 		"ypos"			"10"
 		"zpos"			"5"
 		"wide"			"50"
@@ -1678,7 +1750,7 @@
 	{
 		"ControlName"	"CExLabel"
 		"fieldName"		"numEngineer"
-		"xpos"			"c-30"
+		"xpos"			"c-10"
 		"ypos"			"10"
 		"zpos"			"5"
 		"wide"			"50"
@@ -1698,7 +1770,7 @@
 	{
 		"ControlName"	"CExLabel"
 		"fieldName"		"numMedic"
-		"xpos"			"c58"
+		"xpos"			"c78"
 		"ypos"			"10"
 		"zpos"			"5"
 		"wide"			"50"
@@ -1718,7 +1790,7 @@
 	{
 		"ControlName"	"CExLabel"
 		"fieldName"		"numSniper"
-		"xpos"			"c108"
+		"xpos"			"c128"
 		"ypos"			"10"
 		"zpos"			"5"
 		"wide"			"50"
@@ -1738,7 +1810,7 @@
 	{
 		"ControlName"	"CExLabel"
 		"fieldName"		"numSpy"
-		"xpos"			"c158"
+		"xpos"			"c178"
 		"ypos"			"10"
 		"zpos"			"5"
 		"wide"			"50"
@@ -1753,15 +1825,15 @@
 		"font"			"MenuClassBuckets"
 		"fgcolor"		"TanLight"
 	}
-	// OWTF2: new class
+	// OWTF2: hero class count, on the second row
 	"numVeteran" [$WIN32]
 	{
 		"ControlName"	"CExLabel"
 		"fieldName"		"numVeteran"
-		"xpos"			"c208"
-		"ypos"			"10"
+		"xpos"			"c-146"
+		"ypos"			"124"
 		"zpos"			"5"
-		"wide"			"50"
+		"wide"			"40"
 		"tall"			"12"
 		"autoResize"	"1"
 		"pinCorner"		"2"
@@ -1773,15 +1845,15 @@
 		"font"			"MenuClassBuckets"
 		"fgcolor"		"TanLight"
 	}
-	// OWTF2: new class
+	// OWTF2: hero class count, on the second row
 	"numCombatMed" [$WIN32]
 	{
 		"ControlName"	"CExLabel"
 		"fieldName"		"numCombatMed"
-		"xpos"			"c258"
-		"ypos"			"10"
+		"xpos"			"c-104"
+		"ypos"			"124"
 		"zpos"			"5"
-		"wide"			"50"
+		"wide"			"40"
 		"tall"			"12"
 		"autoResize"	"1"
 		"pinCorner"		"2"
@@ -1792,13 +1864,33 @@
 		"textAlignment"	"center"
 		"font"			"MenuClassBuckets"
 		"fgcolor"		"TanLight"
+	}
+	// OWTF2: hero class count, on the second row
+	"numCrusader" [$WIN32]
+	{
+		"ControlName"	"CExLabel"
+		"fieldName"		"numCrusader"
+		"xpos"			"c-62"
+		"ypos"			"124"
+		"zpos"			"5"
+		"wide"			"40"
+		"tall"			"12"
+		"autoResize"	"1"
+		"pinCorner"		"2"
+		"visible"		"1"
+		"enabled"		"1"
+		"tabPosition"	"0"
+		"labelText"		"%numCrusader%"
+		"textAlignment"	"center"
+		"font"			"MenuClassBuckets"
+		"fgcolor"		"TanLight"
 	}								
 	
 	"MvMUpgradeImageScout"
 	{
 		"ControlName"	"ImagePanel"
 		"fieldName"		"MvMUpgradeImageScout"
-		"xpos"			"c-290"
+		"xpos"			"c-270"
 		"ypos"			"30"
 		"zpos"			"10"
 		"wide"			"10"
@@ -1813,7 +1905,7 @@
 	{
 		"ControlName"	"ImagePanel"
 		"fieldName"		"MvMUpgradeImageSolider"
-		"xpos"			"c-240"
+		"xpos"			"c-220"
 		"ypos"			"30"
 		"zpos"			"10"
 		"wide"			"10"
@@ -1828,7 +1920,7 @@
 	{
 		"ControlName"	"ImagePanel"
 		"fieldName"		"MvMUpgradeImagePyro" 
-		"xpos"			"c-190"
+		"xpos"			"c-170"
 		"ypos"			"30"
 		"zpos"			"10"
 		"wide"			"10"
@@ -1843,7 +1935,7 @@
 	{
 		"ControlName"	"ImagePanel"
 		"fieldName"		"MvMUpgradeImageDemoman" 
-		"xpos"			"c-100"
+		"xpos"			"c-80"
 		"ypos"			"30"
 		"zpos"			"10"
 		"wide"			"10"
@@ -1858,7 +1950,7 @@
 	{
 		"ControlName"	"ImagePanel"
 		"fieldName"		"MvMUpgradeImageHeavy" 
-		"xpos"			"c-50"
+		"xpos"			"c-30"
 		"ypos"			"30"
 		"zpos"			"10"
 		"wide"			"10"
@@ -1873,7 +1965,7 @@
 	{
 		"ControlName"	"ImagePanel"
 		"fieldName"		"MvMUpgradeImageEngineer"
-		"xpos"			"c0"
+		"xpos"			"c20"
 		"ypos"			"30"
 		"zpos"			"10"
 		"wide"			"10"
@@ -1888,7 +1980,7 @@
 	{
 		"ControlName"	"ImagePanel"
 		"fieldName"		"MvMUpgradeImageMedic"
-		"xpos"			"c88"
+		"xpos"			"c108"
 		"ypos"			"30"
 		"zpos"			"10"
 		"wide"			"10"
@@ -1903,7 +1995,7 @@
 	{
 		"ControlName"	"ImagePanel"
 		"fieldName"		"MvMUpgradeImageSniper"
-		"xpos"			"c138"
+		"xpos"			"c158"
 		"ypos"			"30"
 		"zpos"			"10"
 		"wide"			"10"
@@ -1918,7 +2010,7 @@
 	{
 		"ControlName"	"ImagePanel"
 		"fieldName"		"MvMUpgradeImageSpy"
-		"xpos"			"c188"
+		"xpos"			"c208"
 		"ypos"			"30"
 		"zpos"			"10"
 		"wide"			"10"

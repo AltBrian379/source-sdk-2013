@@ -59,6 +59,7 @@ static const char *g_szBlueClassImages[] =
 	"../hud/class_engiblue",
 	"../hud/class_sniperblue",	// OWTF2: Veteran, Sniper art for now
 	"../hud/class_medicblue",	// OWTF2: Combat Medic, Medic art for now
+	"../hud/class_demoblue",	// OWTF2: Crusader, Demoman art for now
 	"../hud/class_scoutblue",
 };
 COMPILE_TIME_ASSERT( ARRAYSIZE( g_szBlueClassImages ) == TF_CLASS_COUNT_ALL );	// OWTF2: catch a missing class row
@@ -77,6 +78,7 @@ static const char *g_szRedClassImages[] =
 	"../hud/class_engired",
 	"../hud/class_sniperred",	// OWTF2: Veteran, Sniper art for now
 	"../hud/class_medicred",	// OWTF2: Combat Medic, Medic art for now
+	"../hud/class_demored",	// OWTF2: Crusader, Demoman art for now
 	"../hud/class_scoutred",
 };
 COMPILE_TIME_ASSERT( ARRAYSIZE( g_szRedClassImages ) == TF_CLASS_COUNT_ALL );	// OWTF2: catch a missing class row

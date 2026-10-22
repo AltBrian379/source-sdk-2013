@@ -49,6 +49,7 @@ const char *g_aPlayerClassNames[TF_CLASS_MENU_BUTTONS] =
 	"#TF_Class_Name_Engineer",
 	"#TF_Class_Name_Veteran",	// OWTF2: new class
 	"#TF_Class_Name_CombatMed",	// OWTF2: new class
+	"#TF_Class_Name_Crusader",	// OWTF2: new class
 	"#TF_Class_Name_Civilian",
 	"",
 	"#TF_Random"
@@ -68,6 +69,7 @@ const char *g_aPlayerClassNames_NonLocalized[TF_CLASS_MENU_BUTTONS] =
 	"Engineer",
 	"Veteran",	// OWTF2: new class
 	"CombatMed",	// OWTF2: new class
+	"Crusader",	// OWTF2: new class
 	"Civilian",
 	"",
 	"Random"
@@ -87,6 +89,7 @@ const char *g_aRawPlayerClassNamesShort[TF_CLASS_MENU_BUTTONS] =
 	"engineer",
 	"veteran",	// OWTF2: new class
 	"combatmed",	// OWTF2: new class
+	"crusader",	// OWTF2: new class
 	"civilian",
 	"",
 	"random"
@@ -106,6 +109,7 @@ const char *g_aRawPlayerClassNames[TF_CLASS_MENU_BUTTONS] =
 	"engineer",
 	"veteran",	// OWTF2: new class
 	"combatmed",	// OWTF2: new class
+	"crusader",	// OWTF2: new class
 	"civilian",
 	"",
 	"random"
@@ -126,6 +130,7 @@ const char g_szBotModels[][ MAX_PATH ] =
 	"models/bots/engineer/bot_engineer.mdl",
 	"models/bots/sniper/bot_sniper.mdl",	// OWTF2: Veteran uses the Sniper model
 	"models/bots/medic/bot_medic.mdl",	// OWTF2: Combat Medic uses the Medic model
+	"models/bots/demo/bot_demo.mdl",	// OWTF2: Crusader uses the Demoman model
 };
 
 const char g_szPlayerRobotModels[][MAX_PATH] =
@@ -143,6 +148,7 @@ const char g_szPlayerRobotModels[][MAX_PATH] =
 	"models/bots/engineer/bot_engineer_human_anim.mdl",
 	"models/bots/sniper/bot_sniper_human_anim.mdl",	// OWTF2: Veteran uses the Sniper model
 	"models/bots/medic/bot_medic_human_anims.mdl",	// OWTF2: Combat Medic uses the Medic model
+	"models/bots/demo/bot_demo_human_anim.mdl",	// OWTF2: Crusader uses the Demoman model
 };
 
 const char g_szBotBossModels[][ MAX_PATH ] = 
@@ -160,6 +166,7 @@ const char g_szBotBossModels[][ MAX_PATH ] =
 	"models/bots/engineer/bot_engineer.mdl",
 	"models/bots/sniper/bot_sniper.mdl",	// OWTF2: Veteran uses the Sniper model
 	"models/bots/medic/bot_medic.mdl",	// OWTF2: Combat Medic uses the Medic model
+	"models/bots/demo_boss/bot_demo_boss.mdl",	// OWTF2: Crusader uses the Demoman model
 };
 
 const char g_szBotBossSentryBusterModel[ MAX_PATH ] = "models/bots/demo/bot_sentry_buster.mdl";
@@ -180,6 +187,7 @@ const char g_szRomePromoItems_Hat[][ MAX_PATH ] =
 	"tw_engineerbot_helmet",
 	"tw_sniperbot_helmet",	// OWTF2: Veteran uses the Sniper model
 	"tw_medibot_hat",	// OWTF2: Combat Medic uses the Medic model
+	"tw_demobot_helmet",	// OWTF2: Crusader uses the Demoman model
 };
 
 const char g_szRomePromoItems_Misc[][ MAX_PATH ] = 
@@ -197,6 +205,7 @@ const char g_szRomePromoItems_Misc[][ MAX_PATH ] =
 	"tw_engineerbot_armor",
 	"tw_sniperbot_armor",	// OWTF2: Veteran uses the Sniper model
 	"tw_medibot_chariot",	// OWTF2: Combat Medic uses the Medic model
+	"tw_demobot_armor",	// OWTF2: Crusader uses the Demoman model
 };
 
 const char *g_pszBreadModels[] = 
@@ -212,6 +221,7 @@ const char *g_pszBreadModels[] =
 	"models/weapons/c_models/c_bread/c_bread_russianblack.mdl",	// Heavy?
 	"models/weapons/c_models/c_bread/c_bread_plainloaf.mdl",	// OWTF2: Veteran. CObjectTeleporter indexes this by class count.
 	"models/weapons/c_models/c_bread/c_bread_pretzel.mdl",	// OWTF2: Combat Medic, the Medic's
+	"models/weapons/c_models/c_bread/c_bread_cinnamon.mdl",	// OWTF2: Crusader, the Demoman's
 };
 
 int GetClassIndexFromString( const char *pClassName, int nLastClassIndex/*=TF_LAST_NORMAL_CLASS*/ )
@@ -247,6 +257,7 @@ int iRemapIndexToClass[] =	// OWTF2: unsized so the assert below catches a missi
 		TF_CLASS_SPY,
 		TF_CLASS_VETERAN,	// OWTF2: new class, menu slot 10
 		TF_CLASS_COMBATMED,	// OWTF2: new class, menu slot 11
+		TF_CLASS_CRUSADER,	// OWTF2: new class, menu slot 12
 		0,
 		0,
 		TF_CLASS_RANDOM
@@ -736,6 +747,7 @@ const char *g_aWeaponNames[] =
 	"TF_WEAPON_COMBATMED_RIFLE",	// OWTF2
 	"TF_WEAPON_COMBATMED_GRENADE",	// OWTF2
 	"TF_WEAPON_COMBATMED_SLEEPDART",	// OWTF2
+	"TF_WEAPON_CRUSADER_HAMMER",	// OWTF2
 
 };
 COMPILE_TIME_ASSERT( ARRAYSIZE( g_aWeaponNames ) == TF_WEAPON_COUNT );
@@ -857,6 +869,7 @@ int g_aWeaponDamageTypes[] =
 	DMG_BULLET,	// TF_WEAPON_COMBATMED_RIFLE, OWTF2: no DMG_USEDISTANCEMOD, the Biotic Rifle is flat
 	DMG_GENERIC,	// TF_WEAPON_COMBATMED_GRENADE, OWTF2: the burst's damage is DMG_GENERIC, flat, no knockback
 	DMG_GENERIC,	// TF_WEAPON_COMBATMED_SLEEPDART, OWTF2: the dart's damage is DMG_GENERIC, no knockback
+	DMG_CLUB,	// TF_WEAPON_CRUSADER_HAMMER, OWTF2: melee, like the swords
 
 };
 
@@ -1675,6 +1688,7 @@ wpntranslation_class_weapons_t pszWpnEntTranslationList[] =
 			"tf_weapon_shotgun_primary",// TF_CLASS_ENGINEER,		
 			"",							// TF_CLASS_VETERAN, OWTF2: new class
 			"",							// TF_CLASS_COMBATMED, OWTF2: new class
+			"",							// TF_CLASS_CRUSADER, OWTF2: new class
 		}
 	},
 
@@ -1693,6 +1707,7 @@ wpntranslation_class_weapons_t pszWpnEntTranslationList[] =
 			"tf_weapon_pistol",			// TF_CLASS_ENGINEER,		
 			"",							// TF_CLASS_VETERAN, OWTF2: new class
 			"",							// TF_CLASS_COMBATMED, OWTF2: new class
+			"",							// TF_CLASS_CRUSADER, OWTF2: new class
 		}
 	},
 
@@ -1711,6 +1726,7 @@ wpntranslation_class_weapons_t pszWpnEntTranslationList[] =
 			"",							// TF_CLASS_ENGINEER,		
 			"",							// TF_CLASS_VETERAN, OWTF2: new class
 			"",							// TF_CLASS_COMBATMED, OWTF2: new class
+			"",							// TF_CLASS_CRUSADER, OWTF2: new class
 		}
 	},
 	{
@@ -1728,6 +1744,7 @@ wpntranslation_class_weapons_t pszWpnEntTranslationList[] =
 			"",							// TF_CLASS_ENGINEER,		
 			"",							// TF_CLASS_VETERAN, OWTF2: new class
 			"",							// TF_CLASS_COMBATMED, OWTF2: new class
+			"",							// TF_CLASS_CRUSADER, OWTF2: new class
 		}
 	},
 	{
@@ -1745,6 +1762,7 @@ wpntranslation_class_weapons_t pszWpnEntTranslationList[] =
 			"tf_weapon_wrench",			// TF_CLASS_ENGINEER,		
 			"",							// TF_CLASS_VETERAN, OWTF2: new class
 			"",							// TF_CLASS_COMBATMED, OWTF2: new class
+			"",							// TF_CLASS_CRUSADER, OWTF2: new class
 		}
 	},
 	{
@@ -1762,6 +1780,7 @@ wpntranslation_class_weapons_t pszWpnEntTranslationList[] =
 			"tf_weapon_throwable_secondary",			// TF_CLASS_ENGINEER,		
 			"",							// TF_CLASS_VETERAN, OWTF2: new class
 			"",							// TF_CLASS_COMBATMED, OWTF2: new class
+			"",							// TF_CLASS_CRUSADER, OWTF2: new class
 		}
 	},
 	{
@@ -1779,6 +1798,7 @@ wpntranslation_class_weapons_t pszWpnEntTranslationList[] =
 			"",			// TF_CLASS_ENGINEER,		
 			"",							// TF_CLASS_VETERAN, OWTF2: new class
 			"",							// TF_CLASS_COMBATMED, OWTF2: new class
+			"",							// TF_CLASS_CRUSADER, OWTF2: new class
 		}
 	},
 	{
@@ -1796,6 +1816,7 @@ wpntranslation_class_weapons_t pszWpnEntTranslationList[] =
 			"tf_weapon_revolver_secondary",		// TF_CLASS_ENGINEER,		
 			"",							// TF_CLASS_VETERAN, OWTF2: new class
 			"",							// TF_CLASS_COMBATMED, OWTF2: new class
+			"",							// TF_CLASS_CRUSADER, OWTF2: new class
 		}
 	},
 };
@@ -1917,6 +1938,7 @@ const char *g_pszClassIcons[SCOREBOARD_CLASS_ICONS] =
 	// OWTF2: Veteran uses the Sniper icons until it has its own art
 	"../hud/leaderboard_class_sniper",
 	"../hud/leaderboard_class_medic",	// OWTF2: Combat Medic, Medic icons for now
+	"../hud/leaderboard_class_demo",	// OWTF2: Crusader, Demoman icons for now
 	"../hud/leaderboard_class_scout_d",
 	"../hud/leaderboard_class_sniper_d",
 	"../hud/leaderboard_class_soldier_d",
@@ -1929,6 +1951,7 @@ const char *g_pszClassIcons[SCOREBOARD_CLASS_ICONS] =
 	// OWTF2: Veteran uses the Sniper icons until it has its own art
 	"../hud/leaderboard_class_sniper_d",
 	"../hud/leaderboard_class_medic_d",	// OWTF2: Combat Medic, Medic icons for now
+	"../hud/leaderboard_class_demo_d",	// OWTF2: Crusader, Demoman icons for now
 };
 COMPILE_TIME_ASSERT( ARRAYSIZE( g_pszClassIcons ) == SCOREBOARD_CLASS_ICONS );	// OWTF2: catch a missing class row
 
@@ -1947,6 +1970,7 @@ const char *g_pszClassIconsAlt[SCOREBOARD_CLASS_ICONS] =
 	// OWTF2: Veteran uses the Sniper icons until it has its own art
 	"class_icons/class_icon_orange_sniper",
 	"class_icons/class_icon_orange_medic",	// OWTF2: Combat Medic, Medic icons for now
+	"class_icons/class_icon_orange_demo",	// OWTF2: Crusader, Demoman icons for now
 	"class_icons/class_icon_orange_scout_d",
 	"class_icons/class_icon_orange_sniper_d",
 	"class_icons/class_icon_orange_soldier_d",
@@ -1959,6 +1983,7 @@ const char *g_pszClassIconsAlt[SCOREBOARD_CLASS_ICONS] =
 	// OWTF2: Veteran uses the Sniper icons until it has its own art
 	"class_icons/class_icon_orange_sniper_d",
 	"class_icons/class_icon_orange_medic_d",	// OWTF2: Combat Medic, Medic icons for now
+	"class_icons/class_icon_orange_demo_d",	// OWTF2: Crusader, Demoman icons for now
 };
 COMPILE_TIME_ASSERT( ARRAYSIZE( g_pszClassIconsAlt ) == SCOREBOARD_CLASS_ICONS );	// OWTF2: catch a missing class row
 
@@ -1976,6 +2001,7 @@ const char *g_pszItemClassImagesRed[] =
 	"class_portraits/engineer",		// TF_CLASS_ENGINEER,
 	"class_portraits/sniper",		// TF_CLASS_VETERAN, OWTF2: Sniper art for now
 	"class_portraits/medic",		// TF_CLASS_COMBATMED, OWTF2: Medic art for now
+	"class_portraits/demoman",		// TF_CLASS_CRUSADER, OWTF2: Demoman art for now
 	"class_portraits/scout_grey",		// TF_CLASS_SCOUT,			
 	"class_portraits/sniper_grey",		// TF_CLASS_SNIPER,
 	"class_portraits/soldier_grey",		// TF_CLASS_SOLDIER,
@@ -1987,6 +2013,7 @@ const char *g_pszItemClassImagesRed[] =
 	"class_portraits/engineer_grey",	// TF_CLASS_ENGINEER,
 	"class_portraits/sniper_grey",		// TF_CLASS_VETERAN, OWTF2: Sniper art for now
 	"class_portraits/medic_grey",		// TF_CLASS_COMBATMED, OWTF2: Medic art for now
+	"class_portraits/demoman_grey",		// TF_CLASS_CRUSADER, OWTF2: Demoman art for now
 };
 COMPILE_TIME_ASSERT( ARRAYSIZE( g_pszItemClassImagesRed ) == SCOREBOARD_CLASS_ICONS );	// OWTF2: catch a missing class row
 
@@ -2004,6 +2031,7 @@ const char *g_pszItemClassImagesBlue[] =
 	"class_portraits/engineer_blue",	// TF_CLASS_ENGINEER,
 	"class_portraits/sniper_blue",		// TF_CLASS_VETERAN, OWTF2: Sniper art for now
 	"class_portraits/medic_blue",		// TF_CLASS_COMBATMED, OWTF2: Medic art for now
+	"class_portraits/demoman_blue",		// TF_CLASS_CRUSADER, OWTF2: Demoman art for now
 	"class_portraits/scout_blue_grey",		// TF_CLASS_SCOUT,			
 	"class_portraits/sniper_blue_grey",		// TF_CLASS_SNIPER,
 	"class_portraits/soldier_blue_grey",	// TF_CLASS_SOLDIER,
@@ -2015,6 +2043,7 @@ const char *g_pszItemClassImagesBlue[] =
 	"class_portraits/engineer_blue_grey",	// TF_CLASS_ENGINEER,
 	"class_portraits/sniper_blue_grey",		// TF_CLASS_VETERAN, OWTF2: Sniper art for now
 	"class_portraits/medic_blue_grey",		// TF_CLASS_COMBATMED, OWTF2: Medic art for now
+	"class_portraits/demoman_blue_grey",		// TF_CLASS_CRUSADER, OWTF2: Demoman art for now
 };
 COMPILE_TIME_ASSERT( ARRAYSIZE( g_pszItemClassImagesBlue ) == SCOREBOARD_CLASS_ICONS );	// OWTF2: catch a missing class row
 

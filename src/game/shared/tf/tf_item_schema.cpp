@@ -1470,6 +1470,7 @@ static PlayerClassInfo_t gs_PlayerClassData[] =
 	{ "Engineer",	"#TF_Class_Name_Engineer" },
 	{ "Veteran",	"#TF_Class_Name_Veteran" },	// OWTF2: new class
 	{ "CombatMed",	"#TF_Class_Name_CombatMed" },	// OWTF2: new class
+	{ "Crusader",	"#TF_Class_Name_Crusader" },	// OWTF2: new class
 	{ "Invalid",	"" }						// lots of code loops over these classes based on LOADOUT_COUNT, which is wrong, but this allows them to do it safely
 };
 

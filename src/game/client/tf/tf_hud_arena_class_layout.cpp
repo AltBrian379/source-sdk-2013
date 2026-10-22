@@ -39,6 +39,7 @@ const char *g_sImagesBlue[] = {
 	"class_sel_sm_engineer_blu",
 	"class_sel_sm_sniper_blu",	// OWTF2: Veteran, Sniper art for now
 	"class_sel_sm_medic_blu",	// OWTF2: Combat Medic, Medic art for now
+	"class_sel_sm_demo_blu",	// OWTF2: Crusader, Demoman art for now
 	"",
 };
 COMPILE_TIME_ASSERT( ARRAYSIZE( g_sImagesBlue ) == TF_CLASS_COUNT_ALL );	// OWTF2: catch a missing class row
@@ -56,6 +57,7 @@ const char *g_sImagesRed[] = {
 	"class_sel_sm_engineer_red",
 	"class_sel_sm_sniper_red",	// OWTF2: Veteran, Sniper art for now
 	"class_sel_sm_medic_red",	// OWTF2: Combat Medic, Medic art for now
+	"class_sel_sm_demo_red",	// OWTF2: Crusader, Demoman art for now
 	"",
 };
 COMPILE_TIME_ASSERT( ARRAYSIZE( g_sImagesRed ) == TF_CLASS_COUNT_ALL );	// OWTF2: catch a missing class row

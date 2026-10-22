@@ -1,0 +1,351 @@
+OWTF2 - Demoman animations (TF2), for the Crusader's placeholders
+===================================================================
+Read from TF2's own model files (tf2_misc_dir.vpk, 2026-10-21) by parsing each .mdl's sequence
+table: sequence name, the activity it answers to, and whether it loops. Code plays activities,
+not sequence names (SendWeaponAnim / DoAnimationEvent -> activity -> a sequence with it; when
+several sequences share an activity, one is picked at random, e.g. b_swing_a / b_swing_b).
+
+The Crusader's choices (which of these it uses, and why) are in docs/crusader-plan.txt,
+section "Animations".
+
+Models
+- Viewmodel arms: models/weapons/c_models/c_demo_arms.mdl ("model_hands" in crusader.txt).
+  Its sequences come from c_demo_animations.mdl ($includemodel); the arms file itself only has
+  the names, no activities. Weapon models (c_demo_cannon, c_demo_sultan_sword, ...) only have
+  an idle: all hand animation is in the arms.
+- World model: models/player/demo.mdl. It includes demo_animations.mdl (the activities),
+  demo_user_animations.mdl (user_ref only) and
+  models/workshop/player/animations/demo_workshop_animations.mdl (community taunts).
+
+How TF2 picks them
+- Viewmodel: CTFWeaponBase translates generic ACT_VM_* by the weapon's type
+  (tf_weaponbase.cpp table): ACT_VM_HITCENTER on a melee weapon -> ACT_MELEE_VM_HITCENTER,
+  on a primary -> ACT_PRIMARY_VM_*, and so on. The swords (CTFSword, tf_weapon_sword.cpp)
+  translate to the *_SPECIAL set instead (cm_* sequences, the two-handed claymore swings).
+  ACT_VM_SWINGHARD is the crit swing.
+- World model: the player anim state plays ACT_MP_<action>_<slot>, the slot coming from the
+  item's "anim_slot" (items_game.txt) or the weapon type. The sword prefab (weapon_sword:
+  Eyelander, Claidheamh Mor, Persian Persuader, Half-Zatoichi, ...) uses anim_slot "item1",
+  so its third-person swing is attackstand_ITEM1 (the two-handed overhead swing). The bottle
+  uses "melee" (Melee_Swing); all-class melees use MELEE_ALLCLASS.
+- Shield charge: there is no charge sequence in either model. TF2 plays the normal run of the
+  active weapon's slot while TF_COND_SHIELD_CHARGE is on (the shield is a wearable).
+
+Viewmodel (c_demo_animations.mdl)
+---------------------------------
+sequence                                     activity                                     loop
+r_handposes                                                                               loop
+b_draw                                       ACT_MELEE_VM_DRAW                            
+b_idle                                       ACT_MELEE_VM_IDLE                            loop
+b_swing_a                                    ACT_MELEE_VM_HITCENTER                       
+b_swing_b                                    ACT_MELEE_VM_HITCENTER                       
+b_swing_c                                    ACT_MELEE_VM_SWINGHARD                       
+melee_allclass_draw                          ACT_MELEE_ALLCLASS_VM_DRAW                   
+melee_allclass_idle                          ACT_MELEE_ALLCLASS_VM_IDLE                   loop
+melee_allclass_swing_a                       ACT_MELEE_ALLCLASS_VM_HITCENTER              
+melee_allclass_swing_b                       ACT_MELEE_ALLCLASS_VM_HITCENTER              
+melee_allclass_swing_c                       ACT_MELEE_ALLCLASS_VM_SWINGHARD              
+cm_draw                                      ACT_VM_DRAW_SPECIAL                          
+cm_idle                                      ACT_VM_IDLE_SPECIAL                          loop
+cm_swing_a                                   ACT_VM_HITCENTER_SPECIAL                     
+cm_swing_b                                   ACT_VM_HITCENTER_SPECIAL                     
+cm_swing_c                                   ACT_VM_SWINGHARD_SPECIAL                     
+sb_idle                                      ACT_PRIMARY_VM_IDLE                          loop
+sb_fire                                      ACT_PRIMARY_VM_PRIMARYATTACK                 
+sb_draw                                      ACT_PRIMARY_VM_DRAW                          
+sb_autofire                                  ACT_PRIMARY_VM_PULLBACK                      
+sb_reload_start                              ACT_PRIMARY_RELOAD_START                     
+sb_reload_loop                               ACT_PRIMARY_VM_RELOAD                        
+sb_reload_end                                ACT_PRIMARY_RELOAD_FINISH                    
+g_draw                                       ACT_SECONDARY_VM_DRAW                        
+g_idle                                       ACT_SECONDARY_VM_IDLE                        loop
+g_fire                                       ACT_SECONDARY_VM_PRIMARYATTACK               
+g_auto_fire                                  ACT_SECONDARY_VM_PULLBACK                    
+g_reload_start                               ACT_SECONDARY_RELOAD_START                   
+g_reload_loop                                ACT_SECONDARY_VM_RELOAD                      
+g_reload_end                                 ACT_SECONDARY_RELOAD_FINISH                  
+loch_reload_start                            ACT_PRIMARY_RELOAD_START_2                   
+loch_reload_loop                             ACT_PRIMARY_VM_RELOAD_2                      loop
+loch_reload_end                              ACT_PRIMARY_RELOAD_FINISH_2                  
+throw_draw                                   ACT_THROWABLE_VM_DRAW                        
+throw_idle                                   ACT_THROWABLE_VM_IDLE                        loop
+throw_fire                                   ACT_THROWABLE_VM_FIRE                        
+spell_draw                                   ACT_SPELL_VM_DRAW                            
+spell_fire                                   ACT_SPELL_VM_FIRE                            
+primary_inspect_start                        ACT_PRIMARY_VM_INSPECT_START                 
+primary_inspect_idle                         ACT_PRIMARY_VM_INSPECT_IDLE                  loop
+primary_inspect_end                          ACT_PRIMARY_VM_INSPECT_END                   
+secondary_inspect_start                      ACT_SECONDARY_VM_INSPECT_START               
+secondary_inspect_idle                       ACT_SECONDARY_VM_INSPECT_IDLE                loop
+secondary_inspect_end                        ACT_SECONDARY_VM_INSPECT_END                 
+melee_inspect_start                          ACT_MELEE_VM_INSPECT_START                   
+melee_inspect_idle                           ACT_MELEE_VM_INSPECT_IDLE                    loop
+melee_inspect_end                            ACT_MELEE_VM_INSPECT_END                     
+melee_allclass_inspect_start                 ACT_MELEE_ALLCLASS_VM_INSPECT_START          
+melee_allclass_inspect_idle                  ACT_MELEE_ALLCLASS_VM_INSPECT_IDLE           loop
+melee_allclass_inspect_end                   ACT_MELEE_ALLCLASS_VM_INSPECT_END            
+claymore_inspect_start                       ACT_SPECIAL_VM_INSPECT_START                 
+claymore_inspect_idle                        ACT_SPECIAL_VM_INSPECT_IDLE                  loop
+claymore_inspect_end                         ACT_SPECIAL_VM_INSPECT_END                   
+grapple_draw                                 ACT_GRAPPLE_DRAW                             
+grapple_idle                                 ACT_GRAPPLE_IDLE                             loop
+grapple_fire_start                           ACT_GRAPPLE_FIRE_START                       
+grapple_fire_idle                            ACT_GRAPPLE_FIRE_IDLE                        loop
+grapple_pull_start                           ACT_GRAPPLE_PULL_START                       
+grapple_pull_idle                            ACT_GRAPPLE_PULL_IDLE                        loop
+grapple_pull_end                             ACT_GRAPPLE_PULL_END                         
+PASSTIME_ball_pickup                         ACT_BALL_VM_PICKUP                           
+PASSTIME_ball_idle                           ACT_BALL_VM_IDLE                             loop
+PASSTIME_ball_catch1                         ACT_BALL_VM_CATCH                            
+PASSTIME_ball_catch2                         ACT_BALL_VM_CATCH                            
+PASSTIME_ball_throw_end                      ACT_BALL_VM_THROW_END                        
+PASSTIME_ball_throw_start                    ACT_BALL_VM_THROW_start                      
+PASSTIME_ball_throw_loop                     ACT_BALL_VM_THROW_LOOP                       
+primary_alt1_inspect_start                   ACT_PRIMARY_ALT1_VM_INSPECT_START            
+primary_alt1_inspect_idle                    ACT_PRIMARY_ALT1_VM_INSPECT_IDLE             loop
+primary_alt1_inspect_end                     ACT_PRIMARY_ALT1_VM_INSPECT_END              
+melee_alt1_inspect_start                     ACT_MELEE_ALT1_VM_INSPECT_START              
+melee_alt1_inspect_idle                      ACT_MELEE_ALT1_VM_INSPECT_IDLE               loop
+melee_alt1_inspect_end                       ACT_MELEE_ALT1_VM_INSPECT_END                
+
+Which weapon plays which (by activity, which is what counts): the weapon scripts (TF2's .ctx,
+decrypted) give the grenade launcher WeaponType "primary" and the stickybomb launcher
+"secondary". So the grenade launcher plays the sb_* sequences (ACT_PRIMARY_*) and the sticky
+launcher the g_* ones (ACT_SECONDARY_*; g_auto_fire = ACT_SECONDARY_VM_PULLBACK is the sticky
+charge-up): the name prefixes don't match the weapons. loch_* is the Loch-n-Load's reload
+(ACT_PRIMARY_*_2). b_* = the bottle and the other melees (WeaponType "melee"), cm_* = the
+swords (tf_weapon_sword.ctx is also "melee"; CTFSword maps to *_SPECIAL), melee_allclass_* =
+all-class melees, throw_* = throwables (Jarate-like), spell_* = Halloween spells, grapple_*,
+PASSTIME_*.
+
+World model sequences with an activity (demo_animations.mdl). Sequences without one
+(aimmatrix_*, layer_*, armslayer_*, bodylayer_*, a_*_reload helpers, jumplandPose_*, swimAlign_*,
+death poses, taunts) are blend layers or are played by name and are left out here; taunts are
+listed at the end.
+
+World model (demo_animations.mdl)
+---------------------------------
+sequence                                     activity                                     loop
+AttackStand_PRIMARY                          ACT_MP_ATTACK_STAND_PRIMARY                  
+AttackCrouch_PRIMARY                         ACT_MP_ATTACK_CROUCH_PRIMARY                 
+AttackSwim_PRIMARY                           ACT_MP_ATTACK_SWIM_PRIMARY                   
+PRIMARY_reload                               ACT_MP_RELOAD_STAND_PRIMARY                  
+a_PRIMARY_reload_loop                        ACT_MP_RELOAD_STAND_PRIMARY_LOOP             
+a_PRIMARY_reload_end                         ACT_MP_RELOAD_STAND_PRIMARY_END              
+PRIMARY_crouch_reload                        ACT_MP_RELOAD_CROUCH_PRIMARY                 
+a_PRIMARY_crouch_reload_loop                 ACT_MP_RELOAD_CROUCH_PRIMARY_LOOP            
+a_PRIMARY_crouch_reload_end                  ACT_MP_RELOAD_CROUCH_PRIMARY_END             
+PRIMARY_swim_reload                          ACT_MP_RELOAD_SWIM_PRIMARY                   
+a_PRIMARY_swim_reload_loop                   ACT_MP_RELOAD_SWIM_PRIMARY_LOOP              
+a_PRIMARY_swim_reload_end                    ACT_MP_RELOAD_SWIM_PRIMARY_END               
+PRIMARY_reload_airwalk                       ACT_MP_RELOAD_AIRWALK_PRIMARY                
+a_PRIMARY_reload_airwalk_loop                ACT_MP_RELOAD_AIRWALK_PRIMARY_LOOP           
+a_PRIMARY_reload_airwalk_end                 ACT_MP_RELOAD_AIRWALK_PRIMARY_END            
+a_flinch01                                   ACT_MP_GESTURE_FLINCH_CHEST                  
+PRIMARY_placeSapper                          ACT_MP_ATTACK_STAND_GRENADE                  
+AttackStand_SECONDARY                        ACT_MP_ATTACK_STAND_SECONDARY                
+AttackCrouch_SECONDARY                       ACT_MP_ATTACK_CROUCH_SECONDARY               
+AttackSwim_SECONDARY                         ACT_MP_ATTACK_SWIM_SECONDARY                 
+SECONDARY_reload                             ACT_MP_RELOAD_STAND_SECONDARY                
+SECONDARY_reload_loop                        ACT_MP_RELOAD_STAND_SECONDARY_LOOP           
+a_SECONDARY_reload_end                       ACT_MP_RELOAD_STAND_SECONDARY_END            
+SECONDARY_crouch_reload                      ACT_MP_RELOAD_CROUCH_SECONDARY               
+a_SECONDARY_crouch_reload_loop               ACT_MP_RELOAD_CROUCH_SECONDARY_LOOP          
+a_SECONDARY_crouch_reload_end                ACT_MP_RELOAD_CROUCH_SECONDARY_END           
+SECONDARY_swim_reload                        ACT_MP_RELOAD_SWIM_SECONDARY                 
+a_SECONDARY_swim_reload_loop                 ACT_MP_RELOAD_SWIM_SECONDARY_LOOP            
+a_SECONDARY_swim_reload_end                  ACT_MP_RELOAD_SWIM_SECONDARY_END             
+SECONDARY_reload_airwalk                     ACT_MP_RELOAD_AIRWALK_SECONDARY              
+a_SECONDARY_reload_airwalk_loop              ACT_MP_RELOAD_AIRWALK_SECONDARY_LOOP         
+a_SECONDARY_reload_airwalk_end               ACT_MP_RELOAD_AIRWALK_SECONDARY_END          
+PRIMARY_stun_begin                           ACT_MP_STUN_BEGIN                            
+PRIMARY_stun_middle                          ACT_MP_STUN_MIDDLE                           
+PRIMARY_stun_end                             ACT_MP_STUN_END                              
+Melee_Swing                                  ACT_MP_ATTACK_STAND_MELEE                    
+Melee_Crouch_Swing                           ACT_MP_ATTACK_CROUCH_MELEE                   
+Melee_Swim_Swing                             ACT_MP_ATTACK_SWIM_MELEE                     
+Melee_allclass_Swing                         ACT_MP_ATTACK_STAND_MELEE_ALLCLASS           
+Melee_allclass_Crouch_Swing                  ACT_MP_ATTACK_CROUCH_MELEE_ALLCLASS          
+Melee_allclass_Swim_Swing                    ACT_MP_ATTACK_SWIM_MELEE_ALLCLASS            
+attackstand_ITEM1                            ACT_MP_ATTACK_STAND_ITEM1                    
+attackcrouch_ITEM1                           ACT_MP_ATTACK_CROUCH_ITEM1                   
+attackswim_ITEM1                             ACT_MP_ATTACK_SWIM_ITEM1                     
+stand_PRIMARY                                ACT_MP_STAND_PRIMARY                         loop
+stand_SECONDARY                              ACT_MP_STAND_SECONDARY                       loop
+stand_MELEE                                  ACT_MP_STAND_MELEE                           loop
+stand_MELEE_ALLCLASS                         ACT_MP_STAND_MELEE_ALLCLASS                  loop
+stand_LOSER                                  ACT_MP_STAND_LOSERSTATE                      loop
+stand_ITEM1                                  ACT_MP_STAND_ITEM1                           loop
+crouch_PRIMARY                               ACT_MP_CROUCH_PRIMARY                        loop
+crouch_SECONDARY                             ACT_MP_CROUCH_SECONDARY                      loop
+crouch_MELEE                                 ACT_MP_CROUCH_MELEE                          loop
+crouch_MELEE_ALLCLASS                        ACT_MP_CROUCH_MELEE_ALLCLASS                 loop
+crouch_LOSER                                 ACT_MP_CROUCH_LOSERSTATE                     loop
+crouch_ITEM1                                 ACT_MP_CROUCH_ITEM1                          loop
+a_jumpstart_PRIMARY                          ACT_MP_JUMP_START_PRIMARY                    
+a_jumpfloat_PRIMARY                          ACT_MP_JUMP_FLOAT_PRIMARY                    loop
+jumpland_PRIMARY                             ACT_MP_JUMP_LAND_PRIMARY                     
+a_jumpstart_SECONDARY                        ACT_MP_JUMP_START_SECONDARY                  
+a_jumpfloat_SECONDARY                        ACT_MP_JUMP_FLOAT_SECONDARY                  loop
+jumpland_SECONDARY                           ACT_MP_JUMP_LAND_SECONDARY                   
+a_jumpstart_MELEE                            ACT_MP_JUMP_START_MELEE                      
+a_jumpfloat_MELEE                            ACT_MP_JUMP_FLOAT_MELEE                      loop
+jumpland_MELEE                               ACT_MP_JUMP_LAND_MELEE                       
+a_jumpstart_MELEE_ALLCLASS                   ACT_MP_JUMP_START_MELEE_ALLCLASS             
+a_jumpfloat_MELEE_ALLCLASS                   ACT_MP_JUMP_FLOAT_MELEE_ALLCLASS             loop
+jumpland_MELEE_ALLCLASS                      ACT_MP_JUMP_LAND_MELEE_ALLCLASS              
+a_jumpstart_LOSER                            ACT_MP_JUMP_START_LOSERSTATE                 
+a_jumpfloat_LOSER                            ACT_MP_JUMP_FLOAT_LOSERSTATE                 loop
+jumpland_LOSER                               ACT_MP_JUMP_LAND_LOSERSTATE                  
+a_jumpstart_ITEM1                            ACT_MP_JUMP_START_ITEM1                      
+a_jumpfloat_ITEM1                            ACT_MP_JUMP_FLOAT_ITEM1                      loop
+jumpland_ITEM1                               ACT_MP_JUMP_LAND_ITEM1                       
+swim_PRIMARY                                 ACT_MP_SWIM_PRIMARY                          loop
+swim_SECONDARY                               ACT_MP_SWIM_SECONDARY                        loop
+swim_MELEE                                   ACT_MP_SWIM_MELEE                            loop
+swim_MELEE_ALLCLASS                          ACT_MP_SWIM_MELEE_ALLCLASS                   loop
+swim_ITEM1                                   ACT_MP_SWIM_ITEM1                            loop
+swim_LOSER                                   ACT_MP_SWIM_LOSERSTATE                       loop
+run_PRIMARY                                  ACT_MP_RUN_PRIMARY                           loop
+crouch_walk_PRIMARY                          ACT_MP_CROUCHWALK_PRIMARY                    loop
+run_SECONDARY                                ACT_MP_RUN_SECONDARY                         loop
+crouch_walk_SECONDARY                        ACT_MP_CROUCHWALK_SECONDARY                  loop
+run_MELEE                                    ACT_MP_RUN_MELEE                             loop
+crouch_walk_MELEE                            ACT_MP_CROUCHWALK_MELEE                      loop
+run_MELEE_ALLCLASS                           ACT_MP_RUN_MELEE_ALLCLASS                    loop
+crouch_walk_MELEE_ALLCLASS                   ACT_MP_CROUCHWALK_MELEE_ALLCLASS             loop
+run_LOSER                                    ACT_MP_RUN_LOSERSTATE                        loop
+run_ITEM1                                    ACT_MP_RUN_ITEM1                             loop
+crouch_walk_ITEM1                            ACT_MP_CROUCHWALK_ITEM1                      loop
+airwalk_PRIMARY                              ACT_MP_AIRWALK_PRIMARY                       loop
+airwalk_SECONDARY                            ACT_MP_AIRWALK_SECONDARY                     loop
+airwalk_MELEE                                ACT_MP_AIRWALK_MELEE                         loop
+airwalk_MELEE_ALLCLASS                       ACT_MP_AIRWALK_MELEE_ALLCLASS                loop
+airwalk_LOSER                                ACT_MP_AIRWALK_LOSERSTATE                    loop
+airwalk_ITEM1                                ACT_MP_AIRWALK_ITEM1                         loop
+a_grapple_pull_start                         ACT_GRAPPLE_PULL_START                       
+a_grapple_pull_idle                          ACT_GRAPPLE_PULL_IDLE                        loop
+a_grapple_SHOOT                              ACT_GRAPPLE_FIRE_START                       
+dieviolent                                   ACT_DIEVIOLENT                               
+gesture_PRIMARY_go                           ACT_MP_GESTURE_VC_FINGERPOINT_PRIMARY        
+gesture_PRIMARY_help                         ACT_MP_GESTURE_VC_HANDMOUTH_PRIMARY          
+gesture_PRIMARY_cheer                        ACT_MP_GESTURE_VC_FISTPUMP_PRIMARY           
+gesture_PRIMARY_positive                     ACT_MP_GESTURE_VC_THUMBSUP_PRIMARY           
+gesture_SECONDARY_go                         ACT_MP_GESTURE_VC_FINGERPOINT_SECONDARY      
+gesture_SECONDARY_help                       ACT_MP_GESTURE_VC_HANDMOUTH_SECONDARY        
+gesture_SECONDARY_cheer                      ACT_MP_GESTURE_VC_FISTPUMP_SECONDARY         
+gesture_SECONDARY_positive                   ACT_MP_GESTURE_VC_THUMBSUP_SECONDARY         
+gesture_MELEE_go                             ACT_MP_GESTURE_VC_FINGERPOINT_MELEE          
+gesture_MELEE_cheer                          ACT_MP_GESTURE_VC_FISTPUMP_MELEE             
+gesture_MELEE_help                           ACT_MP_GESTURE_VC_HANDMOUTH_MELEE            
+gesture_MELEE_positive                       ACT_MP_GESTURE_VC_THUMBSUP_MELEE             
+competitive_loserstate_idle                  ACT_MP_COMPETITIVE_LOSERSTATE                loop
+competitive_winnerstate_idle                 ACT_MP_COMPETITIVE_WINNERSTATE               loop
+throw_fire                                   ACT_MP_THROW                                 
+kart_idle                                    ACT_KART_IDLE                                loop
+kart_dash                                    ACT_KART_ACTION_DASH                         
+kart_impact                                  ACT_KART_IMPACT                              
+kart_impact_big                              ACT_KART_IMPACT_BIG                          
+a_kart_jump_start                            ACT_KART_JUMP_START                          
+a_kart_jump_float                            ACT_KART_JUMP_FLOAT                          loop
+jumpland_KART                                ACT_KART_JUMP_LAND                           
+taunt_cyoa_PDA_intro                         ACT_MP_CYOA_PDA_INTRO                        
+taunt_cyoa_PDA_idle_A                        ACT_MP_CYOA_PDA_IDLE                         
+taunt_cyoa_PDA_outro                         ACT_MP_CYOA_PDA_OUTRO                        
+PASSTIME_throw_begin                         ACT_MP_PASSTIME_THROW_BEGIN                  
+PASSTIME_throw_middle                        ACT_MP_PASSTIME_THROW_MIDDLE                 
+PASSTIME_throw_end                           ACT_MP_PASSTIME_THROW_END                    
+PASSTIME_throw_cancel                        ACT_MP_PASSTIME_THROW_CANCEL                 
+stand_PASSTIME                               ACT_MP_STAND_PASSTIME                        loop
+run_PASSTIME                                 ACT_MP_RUN_PASSTIME                          loop
+crouch_walk_PASSTIME                         ACT_MP_CROUCHWALK_PASSTIME                   loop
+
+World model sequences without an activity (played by name or used as layers)
+--------------------------------------------------------------------------
+ragdollspawn, r_handposes, r_armposes, PRIMARY_aimmatrix_idle, PRIMARY_aimmatrix_run,
+PRIMARY_aimmatrix_crouch_idle, a_PRIMARY_reload, a_PRIMARY_crouch_reload, a_PRIMARY_swim_reload,
+a_PRIMARY_reload_airwalk, layer_placeSapper_ArmL, SECONDARY_aimmatrix_idle, SECONDARY_aimmatrix_run,
+SECONDARY_aimmatrix_crouch_idle, a_SECONDARY_reload, a_SECONDARY_crouch_reload,
+a_SECONDARY_swim_reload, a_SECONDARY_reload_airwalk, layer_PRIMARY_stun_begin,
+layer_PRIMARY_stun_middle, layer_PRIMARY_stun_end, MELEE_aimmatrix_idle, MELEE_aimmatrix_run,
+MELEE_aimmatrix_crouch_idle, MELEE_ALLCLASS_aimmatrix_idle, MELEE_ALLCLASS_aimmatrix_run,
+MELEE_ALLCLASS_aimmatrix_crouch_idle, armslayer_melee_swing, bodylayer_Melee_Swing,
+armslayer_melee_Crouch_swing, bodylayer_Melee_Crouch_Swing, armslayer_melee_Swim_swing,
+bodylayer_Melee_Swim_Swing, armslayer_melee_allclass_swing, bodylayer_Melee_allclass_Swing,
+armslayer_melee_allclass_Crouch_swing, bodylayer_Melee_allclass_Crouch_Swing,
+armslayer_melee_allclass_Swim_swing, bodylayer_Melee_allclass_Swim_Swing, armslayer_ITEM1_swing,
+bodylayer_ITEM1_swing, armslayer_ITEM1_crouch_swing, bodylayer_ITEM1_crouch_swing,
+armslayer_ITEM1_swim_swing, bodylayer_ITEM1_swim_swing, ITEM1_aimmatrix_idle,
+ITEM1_aimmatrix_crouch_idle, jumplandPose_PRIMARY, jumplandPose_SECONDARY, jumplandPose_MELEE,
+jumplandPose_MELEE_ALLCLASS, jumplandPose_LOSER, jumplandPose_ITEM1, PRIMARY_aimmatrix_swim,
+s_swimAlign_PRIMARY, SECONDARY_aimmatrix_swim, s_swimAlign_SECONDARY, MELEE_aimmatrix_swim,
+s_swimAlign_MELEE, MELEE_ALLCLASS_aimmatrix_swim, s_swimAlign_MELEE_ALLCLASS, ITEM1_aimmatrix_swim,
+s_swimAlign_ITEM1, s_swimAlign_LOSER, ITEM1_aimmatrix_run, PRIMARY_aimmatrix_airwalk,
+layer_grapple_SHOOT, layer_dieviolent, PRIMARY_death_headshot, PRIMARY_death_backstab,
+PRIMARY_death_burning, layer_gesture_PRIMARY_go_armL, layer_gesture_PRIMARY_go_runN_armL,
+layer_gesture_PRIMARY_help_armL, layer_gesture_PRIMARY_help_runN_armL,
+layer_gesture_PRIMARY_cheer_armL, layer_gesture_PRIMARY_cheer_runN_armL,
+layer_gesture_PRIMARY_positive_armL, layer_gesture_PRIMARY_positive_runN_armL,
+layer_gesture_SECONDARY_go_armL, layer_gesture_SECONDARY_go_runN_armL,
+layer_gesture_SECONDARY_help_armL, layer_gesture_SECONDARY_help_runN_armL,
+layer_gesture_SECONDARY_cheer_armL, layer_gesture_SECONDARY_cheer_runN_armL,
+layer_gesture_SECONDARY_positive_armL, layer_gesture_SECONDARY_positive_runN_armL,
+layer_gesture_MELEE_go_armL, layer_gesture_MELEE_cheer_armL, layer_gesture_MELEE_help_armL,
+layer_gesture_MELEE_positive_armL, selectionmenu_startpose, selectionmenu_anim01,
+selectionmenu_idle, armslayer_throw_fire, a_steer_allclass_matrix, a_vehicle_NS_leans,
+a_aerobic_turns, PASSTIME_aimmatrix_idle, PASSTIME_aimmatrix_run, PASSTIME_aimmatrix_crouch_idle,
+layer_PASSTIME_throw_begin, layer_PASSTIME_throw_middle, layer_PASSTIME_throw_end,
+layer_PASSTIME_throw_cancel
+
+Taunts (demo_animations.mdl)
+----------------------------
+layer_taunt01, taunt01, layer_taunt02, taunt02, layer_taunt03, taunt03, layer_taunt04, taunt04,
+taunt06, layer_taunt08, taunt08, layer_taunt09, taunt09, layer_taunt_replay, taunt_replay,
+layer_taunt_laugh, taunt_laugh, layer_taunt11_howl, taunt11_howl, taunt_brutallegendinterior,
+taunt_brutallegendin, taunt_brutallegendout, taunt_brutallegendinblend, taunt_brutallegendoutblend,
+taunt_brutallegend, taunt_highFiveStart, taunt_highFiveStart_idle, layer_taunt_highfiveSuccess,
+taunt_highfiveSuccess, layer_taunt_highfiveSuccessFull, taunt_highfiveSuccessFull, taunt_conga,
+layer_taunt_dosido_dance, taunt_dosido_dance, layer_taunt_dosido_intro, taunt_dosido_intro,
+taunt_flip_start, layer_taunt_flip_success_initiator, taunt_flip_success_initiator,
+layer_taunt_flip_success_receiver, taunt_flip_success_receiver, taunt_rps_start,
+layer_taunt_rps_rock, taunt_rps_rock, layer_taunt_rps_paper, taunt_rps_paper,
+layer_taunt_rps_scissors, taunt_rps_scissors, layer_taunt_rps_rock_win, taunt_rps_rock_win,
+layer_taunt_rps_paper_win, taunt_rps_paper_win, layer_taunt_rps_scissors_win,
+taunt_rps_scissors_win, layer_taunt_rps_rock_lose, taunt_rps_rock_lose, layer_taunt_rps_paper_lose,
+taunt_rps_paper_lose, layer_taunt_rps_scissors_lose, taunt_rps_scissors_lose,
+layer_taunt_headbutt_start, taunt_headbutt_start, layer_taunt_headbutt_success,
+taunt_headbutt_success, layer_taunt_nuke, taunt_nuke, layer_taunt_woohoo, taunt_woohoo,
+a_steer_taunt_allclass_matrix, layer_taunt_vehicle_allclass_spawn,
+taunt_vehicle_allclass_start_layer, taunt_vehicle_allclass_start, layer_taunt_vehicle_allclass_honk,
+taunt_vehicle_allclass_honk, layer_taunt_vehicle_allclass_end, taunt_vehicle_allclass_end,
+taunt_aerobic_A_START, taunt_aerobic_A, taunt_aerobic_B_START, taunt_aerobic_B, taunt_russian,
+layer_taunt_yetipunch, taunt_yetipunch, layer_taunt_yeti_prop, taunt_yeti_layer, taunt_yeti,
+layer_taunt_cyoa_PDA_intro, layer_taunt_cyoa_PDA_outro
+
+Taunts (demo_workshop_animations.mdl)
+-------------------------------------
+layer_taunt_burstchester_demo, taunt_burstchester_demo, layer_true_scotsmans_call,
+true_scotsmans_call, a_broom_steer_matrix, a_broom_leen_matrix, broom_look_anim, layer_zoomin_broom,
+taunt_zoomin_broom, layer_zoomin_broom_exit, taunt_zoomin_broom_exit, layer_secondrate_sorcery_demo,
+secondrate_sorcery_demo, taunt_scotsmans_stagger, layer_taunt_the_pooped_deck,
+taunt_the_pooped_deck, layer_taunt_the_pooped_deck_end, taunt_the_pooped_deck_end,
+layer_poopeddeckaction1, taunt_the_pooped_deck_action1, layer_poopeddeckaction2,
+taunt_the_pooped_deck_action2, layer_taunt_the_fist_bump, taunt_the_fist_bump,
+layer_taunt_the_fist_bump_fistbump, taunt_the_fist_bump_fistbump, layer_taunt_shipwheel_intro,
+taunt_shipwheel_intro, layer_taunt_shipwheel_loop, layer_taunt_shipwheel_action1,
+taunt_shipwheel_action1, layer_taunt_shipwheel_action2, taunt_shipwheel_action2,
+layer_taunt_shipwheel_outro, taunt_shipwheel_outro, layer_taunt_the_scaredycat_demo,
+taunt_the_scaredycat_demo, layer_taunt_drunk_manns_cannon, taunt_drunk_manns_cannon,
+taunt_drunk_manns_cannon_a1, taunt_drunk_manns_cannon_a2, layer_taunt_drunk_manns_cannon_outro,
+taunt_drunk_manns_cannon_outro, layer_taunt_shanty_shipmate, taunt_shanty_shipmate,
+layer_taunt_shanty_shipmate_outro, taunt_shanty_shipmate_outro, layer_taunt_killer_joke_demo,
+taunt_killer_joke_demo, layer_taunt_roar_owar, taunt_roar_owar, layer_taunt_neck_snap_demo,
+taunt_neck_snap_demo, layer_taunt_cheers_demo, taunt_cheers_demo, layer_taunt_mourning_mercs_demo,
+taunt_mourning_mercs_demo, layer_taunt_unleashed_rage_demo, taunt_unleashed_rage_demo,
+layer_taunt_commending_clap_demo, taunt_commending_clap_demo, layer_taunt_peace_demo,
+taunt_peace_demo, layer_taunt_forehead_slice, taunt_forehead_slice,
+layer_taunt_the_final_score_demo, taunt_the_final_score_demo, layer_taunt_bear_hug_demo,
+taunt_bear_hug_demo, layer_taunt_flag_demo, taunt_flag_demo, layer_taunt_flag_demo_outro,
+taunt_flag_demo_outro, layer_taunt_dead_manns_drink, taunt_dead_manns_drink,
+layer_taunt_the_critical_fail_demo, taunt_the_critical_fail_demo, layer_taunt_barrel_roll,
+taunt_barrel_roll, layer_taunt_barrel_roll_outro, taunt_barrel_roll_outro

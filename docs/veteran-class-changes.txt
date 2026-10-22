@@ -1051,3 +1051,70 @@ Tested in game (itemtest; disabled enemy sentry, enemy and teammate Heavies):
     unscoped: reloaded to 15. Clip 10 reloading, then scope: stopped, scoped, 10 kept.
   - Screenshots: yellow outline on the teammate near the crosshair with the ultimate
     ready; none when looking away.
+
+
+15. Third hero class: Crusader (TF_CLASS_CRUSADER = 12)
+-------------------------------------------------------
+Plan: docs/crusader-plan.txt. Inserted after Combat Medic, so Civilian is now 13, the class
+count 14 and Random 15. Every table with a Combat Medic row got a Crusader row with the
+Demoman's placeholders (model, bot and boss models, Rome promo items, bread, gibs, icons,
+portraits, menu art and music, PASS Time tuning, eye height 68, model panel zoom 22), and
+LOADOUT_COUNT went to (13+1). Raw name "crusader", non-localized "Crusader", localized
+#TF_Class_Name_Crusader, tf_tournament_classlimit_crusader.
+- tf_classmenu.cpp: GetPlaceholderContentClass maps Crusader -> Demoman. Chalkboard tips:
+  stock Random's tips are ClassTips_12_*, the Crusader's number, so GetClassTipsKey keys the
+  mod's classes numbered 12 and up by raw name (ClassTips_crusader_*). Veteran and Combat
+  Medic keep ClassTips_10 / ClassTips_11.
+- ClassSelection.res / ClassSelection_SC.res: rebuilt from TF2's stock files (tf2_misc_dir.vpk).
+  The stock row and Random are back at their stock positions (this undoes the 20-unit shift of
+  section 4 and the Combat Medic's positions in section 7); Random sends "select 15". The mod's
+  heroes are on a second row under the top band, between the player model and the chalkboard:
+  veteran / combatmed / crusader (select 10 / 11 / 12) at c-146 / c-104 / c-62, ypos 112,
+  40x80 (the stock buttons are 50x100), their count labels on top, and a "Heroes" label
+  under them (#OWTF2_ClassMenu_Heroes). The hero buttons have no _hidef / _lodef variants.
+- CharInfoLoadoutSubPanel.res: "crusader" button.
+- Loadout: primary, secondary and melee like stock for now (g_DefaultLoadoutPanelPositioning,
+  item_quickswitch.cpp). The hammer's slot is decided in phase 2.
+- scripts/playerclasses/crusader.txt: Demoman model, hands and death sounds, 175 HP (the
+  Demoman's; the plan's 300 is still to decide), speed 280, no ultimate (ultimate_cost 0),
+  no ammo.
+- mod_tf_english.txt: class name, Tip_12 and ClassTips_crusader (work-in-progress notes).
+Tested in game (itemtest): the class menu shows the Crusader button with the Demoman art after
+the Combat Medic, Random still on screen at 1280x720, and the Crusader chalkboard tip.
+joinclass crusader spawns class 12 with models/player/demo.mdl, 175/175 HP, m_flMaxspeed 280
+after the spawn freeze, no weapons; walks. joinclass random still gives a valid class.
+
+
+16. Crusader: the hammer and alternating swings
+-----------------------------------------------
+- shared/tf/tf_weapon_alternating_melee.cpp/.h (new, shared hero system): CTFAlternatingSwingMelee,
+  a CTFWeaponBaseMelee. Networked, predicted m_bSwingRight, m_flSwingChainTime, m_bSwingBuffered.
+  The side is picked in PrimaryAttack (left unless the swing starts within one tick of the chain
+  time); ItemPostFrame buffers a press made during a swing; DoViewModelAnimation plays the side's
+  viewmodel sequence by name; SendPlayerAnimEvent plays the side's third-person gesture
+  (PLAYERANIMEVENT_CUSTOM_GESTURE, by stance).
+- shared/tf/tf_weapon_crusader_hammer.cpp/.h (new): CTFCrusaderHammer, tf_weapon_crusader_hammer.
+  Swords' viewmodel set (*_SPECIAL, like CTFSword); left cm_swing_b, right cm_swing_a; third person
+  Melee_Swing on both sides.
+- tf_shareddefs.h/.cpp: TF_WEAPON_CRUSADER_HAMMER (name, DMG_CLUB).
+- client_tf.vpc, server_tf.vpc: the four files (projects regenerated).
+- scripts/tf_weapon_crusader_hammer.txt: the Eyelander's values (tf_weapon_sword.ctx), bucket 0.
+- items_owtf2.txt: item 60005, primary, anim_slot item1, c_claymore.mdl, the Eyelander's sounds
+  and viewmodel offset.
+- mod_tf_english.txt: OWTF2_Weapon_CrusaderHammer ("War Hammer"), _Type, _Desc. The Crusader's
+  loading tip no longer names Overwatch abilities (no Blizzard names in shipped text).
+Tested in game: see docs/crusader-plan.txt, "Alternating swing".
+- Sweep hit (added after): tf_weapon_alternating_melee.cpp/.h: GetSweepParams, StartSweep /
+  UpdateSweep / CastSweepRay (server), Smack skipped when the sweep is used,
+  tf_alternating_swing_debug. tf_weapon_crusader_hammer.cpp/.h: tf_crusader_hammer_rays / _arc /
+  _range / _sweep_time. tf_weaponbase_melee.h: OnSwingHit moved from private to protected
+  (OWTF2 comment), for the sweep.
+- Knockback along the swing (added after): server/tf/tf_player.h/.cpp: CTFPlayer::AdjustDamageDirection
+  (OWTF2 override; calls AlternatingSwing_AdjustDamageDirection). tf_weapon_alternating_melee: the sweep
+  stores each hit's push direction (sideways, the swing's way) while OnSwingHit applies the damage.
+- Values (the user's): crusader.txt health_max 385; tf_weapon_crusader_hammer.txt Damage 70.
+- Swing timing (added after): AlternatingSwingSweep_t.flDelay (cast before the first ray);
+  tf_crusader_hammer_cast_time 0.4, tf_crusader_hammer_sweep_time 0.21; TimeFireDelay 1.05.
+- Viewmodel timing (added after): AlternatingSwingAnims_t flViewModelSweepStart / End (cycles where
+  the blade crosses); CTFAlternatingSwingMelee::UpdateSwingAnimRate, networked and predicted
+  m_flSwingAnimStart / m_iSwingAnimPhase. The hammer's sides swapped: left cm_swing_a, right cm_swing_b.

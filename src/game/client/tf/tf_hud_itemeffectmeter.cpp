@@ -1073,6 +1073,7 @@ static const char *pszClassIcons[] = {
 	"../hud/leaderboard_class_engineer",
 	"../hud/leaderboard_class_sniper",	// OWTF2: Veteran, Sniper art for now
 	"../hud/leaderboard_class_medic",	// OWTF2: Combat Medic, Medic art for now
+	"../hud/leaderboard_class_demo",	// OWTF2: Crusader, Demoman art for now
 };
 COMPILE_TIME_ASSERT( ARRAYSIZE( pszClassIcons ) == TF_LAST_NORMAL_CLASS );	// OWTF2: catch a missing class row
 

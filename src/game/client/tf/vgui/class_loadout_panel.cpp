@@ -218,6 +218,7 @@ const LoadoutPanelPositioningInstance *g_VisibleLoadoutSlotsPerClass[] =
 	&g_LoadoutPanelPositioning_Engineer,		// TF_CLASS_ENGINEER
 	&g_LoadoutPanelPositioning_Veteran,			// TF_CLASS_VETERAN, OWTF2: new class
 	&g_DefaultLoadoutPanelPositioning,			// TF_CLASS_COMBATMED, OWTF2: new class; primary, secondary and melee like stock
+	&g_DefaultLoadoutPanelPositioning,			// TF_CLASS_CRUSADER, OWTF2: new class; primary, secondary and melee like stock
 };
 
 COMPILE_TIME_ASSERT( ARRAYSIZE( g_VisibleLoadoutSlotsPerClass ) == TF_LAST_NORMAL_CLASS );

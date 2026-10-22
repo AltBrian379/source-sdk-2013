@@ -23,6 +23,7 @@ extern bool UseHWMorphModels();
 #define TF_CLASS_ENGINEER_FILE			"scripts/playerclasses/engineer"
 #define TF_CLASS_VETERAN_FILE			"scripts/playerclasses/veteran"	// OWTF2: new class
 #define TF_CLASS_COMBATMED_FILE			"scripts/playerclasses/combatmed"	// OWTF2: new class
+#define TF_CLASS_CRUSADER_FILE			"scripts/playerclasses/crusader"	// OWTF2: new class
 #define TF_CLASS_CIVILIAN_FILE			"scripts/playerclasses/civilian"
 
 const char *s_aPlayerClassFiles[] =
@@ -39,6 +40,7 @@ const char *s_aPlayerClassFiles[] =
 	TF_CLASS_ENGINEER_FILE,
 	TF_CLASS_VETERAN_FILE,		// OWTF2: new class
 	TF_CLASS_COMBATMED_FILE,	// OWTF2: new class
+	TF_CLASS_CRUSADER_FILE,	// OWTF2: new class
 	TF_CLASS_CIVILIAN_FILE
 };
 

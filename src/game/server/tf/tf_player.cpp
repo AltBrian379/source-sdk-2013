@@ -130,6 +130,7 @@
 #include "tf_weapon_slap.h"
 #include "func_croc.h"
 #include "tf_weapon_bonesaw.h"
+#include "tf_weapon_alternating_melee.h"	// OWTF2: sweep push direction (AdjustDamageDirection)
 #include "pointhurt.h"
 #include "info_camera_link.h"
 
@@ -10251,6 +10252,16 @@ void CTFPlayer::CommitSuicide( bool bExplode /* = false */, bool bForce /*= fals
 // Output : int
 //-----------------------------------------------------------------------------
 ConVar tf_preround_push_from_damage_enable( "tf_preround_push_from_damage_enable", "0", FCVAR_NONE, "If enabled, this will allow players using certain type of damage to move during pre-round freeze time." );
+//-----------------------------------------------------------------------------
+// OWTF2: as an inflictor (a melee hit's inflictor is the attacker), let an alternating melee
+// weapon push its sweep's victims in the direction of the swing instead of away from us.
+//-----------------------------------------------------------------------------
+void CTFPlayer::AdjustDamageDirection( const CTakeDamageInfo &info, Vector &dir, CBaseEntity *pEnt )
+{
+	BaseClass::AdjustDamageDirection( info, dir, pEnt );
+	AlternatingSwing_AdjustDamageDirection( info, dir );
+}
+
 void CTFPlayer::ApplyPushFromDamage( const CTakeDamageInfo &info, Vector vecDir )
 {
 	// check if player can be moved
